@@ -14,3 +14,10 @@ print(fruits)  # print list
 print(type(fruits)) # print type of list
 print(fruits[0]) # print first element of list
 print(len(fruits)) # print lenth of list
+
+#list is mutable in python 
+student = ["aman" , 84.26 , 22 , "delhi" ]
+print(student)
+
+student[0] = "aman chauhan"
+print(student) # list is mutable
