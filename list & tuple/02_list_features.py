@@ -17,8 +17,8 @@ print(name)
 name.reverse() # reverse list
 print(name)
 
-
 values = [23, 44, 65, 74, 88]
+
 
 values.insert(4, 77) #insert element at index
 print(values)

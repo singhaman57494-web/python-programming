@@ -34,3 +34,7 @@ if reverse_nums == nums:
     print("list is palindrome")
 else:
     print("not palindrome")
+
+
+
+
