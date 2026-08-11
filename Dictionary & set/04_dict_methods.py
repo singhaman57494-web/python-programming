@@ -37,4 +37,10 @@ print(list(student.values()))
 print(student.items())   # returns all (key , val) pairs as tuples
 print(list(student.items()))   
 
+# print(student("name2")) # error
+print(student.get("name2"))  #return None value
 
+new_dict = {"city" : "delhi", "rollno" : 25516}
+student.update(new_dict)  # inserts the specified items to the dictionary
+
+print(student)

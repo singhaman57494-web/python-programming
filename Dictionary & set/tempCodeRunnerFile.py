@@ -1,3 +1,2 @@
-null_dict = {}
-null_dict["name"] = "python"
-print(null_dict)
+nums = {'9', 9.0}
+print(nums)
