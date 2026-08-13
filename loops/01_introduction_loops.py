@@ -31,3 +31,25 @@ while(i <= 5):
     i += 1
 
 print(i)
+
+
+#                                  for loop in python
+
+# for loop are used for sequential traversal. for treversing list, string, tuples etc.
+
+# example:-
+
+nums = [1, 2, 3, 4]
+
+for el in nums:
+    print(el)
+
+
+# example 2:-
+
+veggies = ["potato", "brijal", "ladyfinger", "cucumber"]
+
+for i in veggies:
+    print(i)
+
+

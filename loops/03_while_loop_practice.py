@@ -46,7 +46,7 @@ while(i < len):
 # question 5:- search for a numer x in this tuple using loop:
 # [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
 
-list = [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+list = (1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
 
 x = 25
 i = 0
@@ -58,4 +58,15 @@ while(i < len(list)):
     i += 1
 
 
+# question 6:- WAP to find the sum of 1 to n numbers.(using while)
+
+n = int(input("enter the number : "))
+i = 1
+sum = 0
+
+while(i < n+1):
+    sum += i
+    i += 1
+
+print("total =", sum)
 
