@@ -1,9 +1,10 @@
-n = int(input("enter the number : "))
+n = int(input("enter n number : "))
 
-def even_odd(n):
-    if(n % 2 == 0):
-        print("even")
+def fact(n):
+    if(n == 0 or n == 1):
+        return 1
     else:
-        print("odd")
+        return n * fact(n-1)
 
-even_odd(n)
+print(fact(n))
+
