@@ -1,9 +1,10 @@
-f = open("student.txt", "r")
+count = 0
+with open("temp.txt", "r") as f:
+    data = f.read()
 
-data = f.read()
-print(type(data))
-print(data)
-f.close()
+    nums = data.split(",")
+    for val in nums:
+        if(int(val) % 2 == 0):
+            count += 1
 
-line1 = f.readline()
-print(line1)
+print(count)
