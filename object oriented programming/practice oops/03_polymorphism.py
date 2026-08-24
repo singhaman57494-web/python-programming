@@ -23,3 +23,24 @@ rect = ractangle(5, 10)
 sq.area()
 rect.area()
 
+# practice 2 polomorphism
+
+class pay:
+    def amount(self, amount):
+        self.amount = amount
+
+class googlepay(pay):
+    def pay(self, amount):
+        self.amount = amount
+        print(f"payment successfully! {amount} form google pay")
+
+class creditCard(pay):
+    def pay(self, amount):
+        self.amount = amount
+        print(f"payment successfully! {amount} form credit card")
+
+gpay = googlepay()
+card = creditCard()
+
+gpay.pay(500)
+card.pay(100)
