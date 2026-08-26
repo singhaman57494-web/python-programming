@@ -1,4 +1,6 @@
 
-num_multiply = lambda a , b, c : a * b * c
+funcs = [lambda x : x + i for i in range (3)]
 
-print(num_multiply( 2, 3, 5))
+print(funcs[0](10))
+print(funcs[1](10))
+print(funcs[2](10))
