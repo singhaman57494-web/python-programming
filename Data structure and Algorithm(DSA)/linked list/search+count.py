@@ -20,7 +20,7 @@ head = node1
 
 current = head
 count = 0
-target = 84
+target = 45
 
 while current is not None:
     count = count + 1
