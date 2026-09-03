@@ -24,20 +24,29 @@ class queue:
     def __init__(self):
         self.items = []
 
-    def enqueue(self,data):
+    def enqueue(self,data):  # add value enqueue()
         self.items.append(data)
 
-    def dequeue(self):
+    def dequeue(self):      # front remove
         if len(self.items) == 0:
             return "queue is empty"
 
         return self.items.pop(0)
 
-    def peek(self):
+    def peek(self):         # chek front
         if len(self.items) == 0:
             return "queue is empty"
 
         return self.items[0]
+
+    def is_empty(self):    # empty check
+        if len(self.items) == 0:
+            return True
+
+        return False
+
+    def display(self): # print queue
+        print("current queue :", self.items)
 
 q = queue()
 
@@ -50,4 +59,6 @@ print("front item :", q.peek())
 print("queue after peek :", q.items)
 print("dequeued item :", q.dequeue())
 print("queue after dequeue : ", q.items)
+print(q.is_empty())
+q.display()
 print(q.items)
