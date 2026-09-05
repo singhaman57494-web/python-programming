@@ -1,3 +1,5 @@
+#  --0(log n)
+
 def find_name(names, target):
     left = 0
     right = len(names) -1
