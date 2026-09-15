@@ -11,3 +11,10 @@ for i in character:
         python[i] = 1
 
 print(python)
+
+
+#                                  shortcut
+
+from collections import Counter
+
+print(Counter(character))
