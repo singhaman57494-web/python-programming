@@ -1,8 +1,27 @@
-expenses = [
-    {"amount" : 250, "category" : "food", "description": "pizza"},
-    {"amount": 50, "category": "Travel", "description": "Bus"}
+expenses = {
+    "Travel" : {
+        "Auto" : 50,
+        "cab" : 200,
+        "bike" : 100,
+        "scooty" : 80,
+        "Bus" : 40,
+        "truck" : 500,
+    },
 
-]
+    "Food" : {
+        "pizza" : 250,
+        "burger" : 120,
+        "Biryani" : 200,
+        "Momos" : 100,
+        "sandwich" : 80,
+    },
+
+    "Shopping" : {
+        "clothes" : 500,
+        "shoes" : 1000,
+        "Books" : 300
+    }
+}
 
 selected_expenses = []
 
@@ -35,18 +54,18 @@ def view_selected_expenses():
              print(count, ".", expense["category"],"-",expense["description"],"-", "₹",expense["amount"])
              count += 1
 def total_expense():
-    if len(expenses)  == 0:
+    if len(selected_expenses)  == 0:
         print(" 0 ")
     else:
         total = 0
-        for expense in expenses:
+        for expense in selected_expenses:
             total += expense["amount"]
-        print(total)
+        print("total expenses : ", total)
 
 def delete_expense():
     number =  int(input("enter the expense : "))
-    if 1 <= number <= len(expenses):
-        expenses.pop(number - 1)
+    if 1 <= number <= len(selected_expenses):
+        selected_expenses.pop(number - 1)
     else:
         print("invalid expense number")
 
