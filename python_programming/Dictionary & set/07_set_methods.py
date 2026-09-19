@@ -19,7 +19,7 @@ print(len(nums))
 
 hello = {"music", "langunage", "light", "plants"}
 
-print(hello.pop()) #reoves a random value
+print(hello.pop()) #removes a random value
 
 nums1 = {2, 4, 5, 8, 9}
 nums2 = {2, 5, 3, 7, 9}
