@@ -2,13 +2,15 @@
 
 students = {
     "Rahul" : 85,
-    "Aman" : 92,
+    "Aman" : 98,
     "priya": 88,
     "Neha" : 95
 }
 maximum = 0
-for value, key in students:
-    if students[value] > maximum:
+key = ""
+for name, value in students.items():
+    if value > maximum:
         maximum = value
+        key = name
 
-print(value)
+print(key, maximum)
