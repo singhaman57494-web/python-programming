@@ -21,6 +21,7 @@ for name, price in cart.items():
         key = name
 
 print("TOTAL : ", total)
+
 print("Expensive items : ", expensive)
 print("Most expensive : ", key, max_price)
 if total > 6000:
