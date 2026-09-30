@@ -27,4 +27,4 @@ print("Most expensive : ", key, max_price)
 if total > 6000:
     print("CUSTOMER TYPE : Premium customer")
 else:
-    print("Regular Customer")
+    print("Regular customer")
