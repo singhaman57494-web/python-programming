@@ -1,5 +1,6 @@
 --                task- storedb
 
+
 CREATE TABLE customers(
     cust_id SERIAL PRIMARY KEY,
     cust_name VARCHAR(100) NOT NULL
@@ -42,7 +43,7 @@ INSERT INTO products (p_name, price)
 VALUES
     ('laptop', 55000.00),
     ('mouse', 500),
-    ('keyboard', 900.00),
+    ('keyboard', 800.00),
     ('cable', 250.00);
 
 INSERT INTO order_items (ord_id, p_id, quantity)
@@ -60,12 +61,15 @@ SELECT p.p_name FROM order_items oi
     JOIN 
         products p ON oi.p_id = p.p_id;
 
+CREATE VIEW billing_info AS
+
 SELECT
     c.cust_name,
     o.ord_date,
     p.p_name,
     p.price,
-    oi.quantity
+    oi.quantity,
+    (oi.quantity*p.price) AS total_price
 FROM order_items oi
     JOIN 
         products p ON oi.p_id = p.p_id
@@ -74,4 +78,21 @@ FROM order_items oi
     JOIN 
         customers c ON o.cust_id = c.cust_id;
     
+    -- view
 
+SELECT * FROM billing_info;
+
+select p_name, SUM(total_price) FROM
+billing_info
+    GROUP BY p_name
+    HAVING SUM(total_price) > 1000;
+
+SELECT
+    COALESCE (p_name, 'total'),
+    SUM(total_price) AS amount
+FROM billing_info
+    GROUP BY
+    ROLLUP (p_name) ORDER BY amount;
+
+TRUNCATE TABLE order_items  RESTART IDENTITY CASCADE;
+TRUNCATE TABLE products RESTART IDENTITY CASCADE;
