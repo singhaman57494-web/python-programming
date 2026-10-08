@@ -68,3 +68,5 @@ WHERE age >= 20;
 SELECT MAX(age)
 FROM students
 WHERE age < 25;
+
+SELECT version();
