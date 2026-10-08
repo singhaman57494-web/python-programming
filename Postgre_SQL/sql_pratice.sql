@@ -40,7 +40,7 @@ SELECT * FROM students
 WHERE id = 2;
 
 DELETE FROM students
-WHERE id = 4;
+WHERE id = 3;
 
 SELECT * FROM students;
 
@@ -50,3 +50,21 @@ FROM students;
 SELECT COUNT(*)
 FROM students
 WHERE age = 22;
+
+SELECT SUM(age)
+FROM students;
+
+SELECT SUM(age)
+FROM students
+WHERE age > 20;
+
+SELECT MIN(age)
+FROM students;
+
+SELECT MIN(age)
+FROM students
+WHERE age >= 20;
+
+SELECT MAX(age)
+FROM students
+WHERE age < 25;
