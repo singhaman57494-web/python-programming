@@ -22,16 +22,9 @@ VALUES
 
 SELECT * FROM students;
 
-SELECT name, age FROM students;
+UPDATE students
+SET city = 'jaipur'
+WHERE city = 'Jaipur';
 
-SELECT name, city FROM students
-WHERE city = 'jaipur';
-
-select name, city FROM students
-WHERE city ILIKE 'jaipur';
-
-SELECT name, age FROM students
-WHERE age >= 23;
-
-SELECT name, age FROM students
-WHERE age > 20 AND city = 'jaipur';
+DELETE FROM students
+WHERE id = 10;
