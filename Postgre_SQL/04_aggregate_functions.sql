@@ -83,3 +83,27 @@ SELECT
     name, 
     COALESCE(city, 'unknown') AS city_name
 FROM students;
+
+SELECT 
+    name,
+    REPLACE(CITY, 'jaipur', 'Jodhpur') AS updated_city
+FROM students;
+
+SELECT 
+    name, 
+    SUBSTRING(name FROM 1 FOR 3) AS short_name
+FROM students;
+
+SELECT ABS(-42) AS result;
+
+SELECT CEIL(23.2) AS result;
+
+SELECT FLOOR(23.8) AS result;
+
+SELECT MOD(10, 3) AS result;
+
+SELECT POWER(2, 3) AS result;
+
+SELECT NOW() AS current_time;
+
+SELECT CURRENT_DATE AS today;
