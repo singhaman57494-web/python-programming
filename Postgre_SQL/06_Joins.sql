@@ -16,7 +16,7 @@ VALUES
 
 SELECT * FROM marks;
 
---                         INNER JOIN
+--                              INNER JOIN
 
 SELECT students.id, students.name, marks.subject, marks.marks
 FROM students
@@ -27,3 +27,42 @@ SELECT students.name, marks.marks
 FROM students
 INNER JOIN marks
 ON students.id = marks.student_id;
+
+--                              LEFT JOIN
+
+SELECT students.name, marks.subject, marks.marks
+FROM students
+LEFT JOIN marks
+ON students.id = marks.student_id;
+
+--                             RIGHT JOIN
+
+SELECT students.name, marks.student_id, marks.subject, marks.marks
+FROM students
+RIGHT JOIN marks
+ON students.id = marks.student_id;
+
+--                            FULL OUTHER JOIN
+
+SELECT students.name, marks.student_id,
+       marks.subject, marks.marks
+FROM students
+FULL OUTER JOIN marks
+ON students.id = marks.student_id;
+
+--                           CROSS JOIN
+
+SELECT students.name, marks.subject, marks.marks
+FROM students
+CROSS JOIN marks;
+
+--                           SELF JOIN
+
+SELECT 
+    s1.name AS student1,
+    s2.name AS student2,
+    S1.city
+FROM students s1
+JOIN students s2
+    ON s1.city = s2.city
+    AND s1.id < s2.id;
