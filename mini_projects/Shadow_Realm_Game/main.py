@@ -43,6 +43,8 @@ while goblin.health > 0 and hero.health > 0:
         hero.show_status()
     elif option == 3:
         break
+    else:
+        print("Invalid option! try again.")
 
 if goblin.health <= 0 and hero.health > 0:
     print("YOU WIN!")
@@ -57,14 +59,16 @@ class Inventory:
         self.items = []
 
     def use_potion(self, character):
-        if self.potions:
-            print("potion available!")
-            self.potions.pop()
-            character.health = min(100, character.health + 20)
-            print("Health restored! Current health : ", character.health)
+        if character.health > 0:
+            if self.potions:
+                print("potion available!")
+                self.potions.pop()
+                character.health = min(100, character.health + 20)
+                print(f"Health restored! {character.name } Current health is {character.health}")
+            else:
+                print("not health potion!")
         else:
-            print("not available!")
-
+            print("character cannot use potions.")
 
     def show_inventory(self):
         print("Weapons : ", self.weapons)
@@ -72,11 +76,21 @@ class Inventory:
         print("Items : ", self.items)
 
 inventory = Inventory()
-
-inventory.use_potion(hero)
-inventory.use_potion(hero)
-
 inventory.weapons.append("Iron Sword")
 inventory.potions.append("Health Potion")
 inventory.items.append("Ancient Key")
-inventory.show_inventory()
+
+while True:
+    choice = input("restore health : 1. Hero 2. goblin 3. Exit 4. show inventory \nenter the number => ")
+    if choice == "1":
+        inventory.use_potion(hero)
+    elif choice == "2":
+        inventory.use_potion(goblin)
+    elif choice == "3":
+        print("END GAME")
+        break
+    elif choice == "4":
+        inventory.show_inventory()
+        print(f"Hero Health : {hero.health} Goblin Helath : {goblin.health}")
+    else:
+        print("Invalid choice! try again.")
