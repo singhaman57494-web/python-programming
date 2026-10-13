@@ -8,6 +8,7 @@ class Character:
         self.health = health
         self.attack_power = attack_power
         self.equipped_weapon = None
+        self.total_damage_delt = 0
 
     def show_status(self):
         print("Name : ", self.name)
@@ -21,6 +22,8 @@ class Character:
             return
         elif self.health > 0 and target.health > 0:
             damage = random.randint(5, self.attack_power)
+            self.total_damage_delt += damage
+            print(f"{self.name} total damage dealt: {self.total_damage_dealt}")
             target.health = max(0, target.health - damage)
             print(f"{self.name} Attacks {target.name} for {damage} damage!")
             if target.health <= 0:
@@ -33,24 +36,13 @@ class Character:
     def unequip_weapon(self):
         if self.equipped_weapon is not None:
             self.attack_power -=  5
+            self.equipped_weapon = None
         else:
             print("no weapon Equiped!")
 
 
 hero = Character("Aman", 100, 20)
 goblin = Character("goblin", 100, 10)
-
-while True:
-    use_weapon = int(input("enter the number (1 - 3): "))
-    if use_weapon == 1:
-        hero.equip_weapon("Iron Sword")
-    elif use_weapon == 2:
-        goblin.equip_weapon("Iron Sword")
-    elif use_weapon == 3:
-        goblin.equip_weapon("Iron Sword")
-        hero.equip_weapon("Iron Sword")
-    else:
-        break
 
 
 while goblin.health > 0 and hero.health > 0:
@@ -76,6 +68,49 @@ if goblin.health <= 0 and hero.health > 0:
 elif hero.health <= 0 and goblin.health > 0:
     print("Game Over!")
 
+while True:
+    use_weapon = int(input( 
+    "\n ====== WEAPON==MENU=======\n"
+    "\n      1 - 3 : equip weapon \n"
+    "1. Equip weapon to Aman\n"
+    "2. Equip weapon to Goblin\n"
+    "3. Equip weapon to both\n"
+    "        4 - 7 : unequip weapon : \n"
+    "4. Unequip Aman's weapon\n"
+    "5. Unequip Goblin's weapon\n"
+    "6. Unequip both weapons \n"
+    "7. Show status both \n"
+    "enter the number (1 - 7) : "))
+    if use_weapon == 1:
+        hero.equip_weapon("Iron Sword")
+        print("Aman equipped Iron Sword!")
+        hero.attack(goblin)
+    elif use_weapon == 2:
+        goblin.equip_weapon("Iron Sword")
+        print("goblin equipped Iron sword!")
+        goblin.attack(hero)
+    elif use_weapon == 3:
+        goblin.equip_weapon("Iron Sword")
+        goblin.attack(hero)
+        hero.equip_weapon("Iron Sword")
+        hero.attack(goblin)
+        print("Aman and goblin equipped Iron Sword!")
+    elif use_weapon == 4:
+        hero.unequip_weapon()
+        print("hero had drop his weapon ")
+    elif use_weapon == 5:
+        goblin.unequip_weapon()
+        print("goblin had drop his weapon")
+    elif use_weapon == 6:
+        hero.unequip_weapon()
+        print("hero had drop his weapon ")
+        goblin.unequip_weapon()
+        print("goblin had drop his weapon")
+    elif use_weapon == 7:
+        hero.show_status()
+        goblin.show_status()
+    else:
+        break
 
 class Inventory:
     def __init__(self):
@@ -86,8 +121,9 @@ class Inventory:
     def use_potion(self, character):
         if character.health > 0:
             if self.potions:
-                print("potion available!")
-                self.potions.pop()
+                print(f"Health potions : {self.potions}")
+                self.potions -= 1
+                print(f"Health potions : {self.potions}")
                 character.health = min(100, character.health + 20)
                 print(f"Health restored! {character.name } Current health is {character.health}")
             else:
@@ -100,22 +136,28 @@ class Inventory:
         print("Potions : ", self.potions)
         print("Items : ", self.items)
 
-inventory = Inventory()
-inventory.weapons.append("Iron Sword")
-inventory.potions.append("Health Potion")
-inventory.items.append("Ancient Key")
+aman_inventory = Inventory()
+aman_inventory.weapons.append("Iron Sword")
+aman_inventory.potions.append("Health Potion")
+aman_inventory.items.append("Ancient Key")
+
+goblin_inventory = Inventory()
+goblin_inventory.weapons.append("Iron Sword")
+goblin_inventory.potions.append("Health Potion")
+goblin_inventory.items.append("Ancient Key")
 
 while True:
     choice = input("restore health : 1. Hero 2. goblin 3. Exit 4. show inventory \nenter the number => ")
     if choice == "1":
-        inventory.use_potion(hero)
+        aman_inventory.use_potion(hero)
     elif choice == "2":
-        inventory.use_potion(goblin)
+        goblin_inventory.use_potion(goblin)
     elif choice == "3":
         print("END GAME")
         break
     elif choice == "4":
-        inventory.show_inventory()
+        aman_inventory.show_inventory()
+        goblin_inventory.show_inventory()
         print(f"Hero Health : {hero.health} Goblin Helath : {goblin.health}")
     else:
         print("Invalid choice! try again.")
