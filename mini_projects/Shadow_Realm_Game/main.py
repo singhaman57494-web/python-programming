@@ -7,11 +7,13 @@ class Character:
         self.name = name
         self.health = health
         self.attack_power = attack_power
+        self.equipped_weapon = None
 
     def show_status(self):
         print("Name : ", self.name)
         print("Health : ", self.health)
         print("Attack Power : ", self.attack_power)
+        print("Equip Weapon : ", self.equipped_weapon)
 
     def attack(self, target):
         if self.health <= 0:
@@ -24,9 +26,32 @@ class Character:
             if target.health <= 0:
                 print(f"{target.name} has been defeated!")
 
+    def equip_weapon(self, weapon):
+        self.equipped_weapon = weapon
+        self.attack_power +=  5
+
+    def unequip_weapon(self):
+        if self.equipped_weapon is not None:
+            self.attack_power -=  5
+        else:
+            print("no weapon Equiped!")
+
 
 hero = Character("Aman", 100, 20)
 goblin = Character("goblin", 100, 10)
+
+while True:
+    use_weapon = int(input("enter the number (1 - 3): "))
+    if use_weapon == 1:
+        hero.equip_weapon("Iron Sword")
+    elif use_weapon == 2:
+        goblin.equip_weapon("Iron Sword")
+    elif use_weapon == 3:
+        goblin.equip_weapon("Iron Sword")
+        hero.equip_weapon("Iron Sword")
+    else:
+        break
+
 
 while goblin.health > 0 and hero.health > 0:
     print("1. Attack")
