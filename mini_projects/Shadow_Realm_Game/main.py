@@ -8,8 +8,8 @@ class Character:
         self.health = health
         self.attack_power = attack_power
         self.equipped_weapon = None
-        self.total_damage_delt = 0
-        self.inoventory = None
+        self.total_damage_dealt = 0
+        self.inventory = None
 
     def show_status(self):
         print("Name : ", self.name)
@@ -23,7 +23,11 @@ class Character:
             return
         elif self.health > 0 and target.health > 0:
             damage = random.randint(5, self.attack_power)
-            self.total_damage_delt += damage
+            self.total_damage_dealt += damage
+            while self.total_damage_dealt >= 50:
+                self.inventory.potions.append("Health potion")
+                self.total_damage_dealt -= 50
+                print(f"{self.name} earned a health potion!")
             print(f"{self.name} total damage dealt: {self.total_damage_dealt}")
             target.health = max(0, target.health - damage)
             print(f"{self.name} Attacks {target.name} for {damage} damage!")
@@ -123,7 +127,7 @@ class Inventory:
         if character.health > 0:
             if self.potions:
                 print(f"Health potions : {self.potions}")
-                self.potions -= 1
+                self.potions.pop()
                 print(f"Health potions : {self.potions}")
                 character.health = min(100, character.health + 20)
                 print(f"Health restored! {character.name } Current health is {character.health}")
@@ -141,11 +145,13 @@ aman_inventory = Inventory()
 aman_inventory.weapons.append("Iron Sword")
 aman_inventory.potions.append("Health Potion")
 aman_inventory.items.append("Ancient Key")
+hero.inventory = aman_inventory
 
 goblin_inventory = Inventory()
 goblin_inventory.weapons.append("Iron Sword")
 goblin_inventory.potions.append("Health Potion")
 goblin_inventory.items.append("Ancient Key")
+goblin.inventory = goblin_inventory
 
 while True:
     choice = input("restore health : 1. Hero 2. goblin 3. Exit 4. show inventory \nenter the number => ")
