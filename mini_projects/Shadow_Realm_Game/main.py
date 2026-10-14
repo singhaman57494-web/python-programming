@@ -9,6 +9,7 @@ class Character:
         self.attack_power = attack_power
         self.equipped_weapon = None
         self.total_damage_delt = 0
+        self.inoventory = None
 
     def show_status(self):
         print("Name : ", self.name)
