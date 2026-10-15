@@ -1,0 +1,11 @@
+{
+    "1": {
+        "name": "Aman",
+        "health": 30,
+        "max_health": 120,
+        "attack_power": 30,
+        "level": 2,
+        "xp": 0,
+        "xp_required": 100
+    }
+}

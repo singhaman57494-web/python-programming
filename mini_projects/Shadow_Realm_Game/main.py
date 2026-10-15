@@ -1,11 +1,13 @@
 #                               main file of game
 
+import json
 import random
 
 class Character:
     def __init__(self, name, health, attack_power):
         self.name = name
         self.health = health
+        self.max_health = health
         self.attack_power = attack_power
         self.equipped_weapon = None
         self.total_damage_dealt = 0
@@ -16,9 +18,35 @@ class Character:
 
     def show_status(self):
         print("Name : ", self.name)
-        print("Health : ", self.health)
+        print("Health : ", self.health, "/", self.max_health)
         print("Attack Power : ", self.attack_power)
         print("Equip Weapon : ", self.equipped_weapon)
+        print("Level : ", self.level)
+        print("XP : ", self.xp, "/", self.xp_required)
+
+    def save_game(self):
+        data = {
+            "name": self.name,
+            "health": self.health,
+            "max_health": self.max_health,
+            "attack_power": self.attack_power,
+            "level": self.level,
+            "xp": self.xp,
+            "xp_required": self.xp_required
+        }
+
+        try:
+            with open("save_game.json", "r") as file:
+                all_saves = json.load(file)
+        except FileNotFoundError:
+            all_saves = {}
+
+        all_saves["1"] = data
+
+        with open("save_game.json", "w") as file:
+            json.dump(all_saves, file, indent=4)
+
+        print("Level 1 game data saved successfully!")
 
     def attack(self, target):
         if self.health <= 0:
@@ -36,7 +64,7 @@ class Character:
             print(f"{self.name} Attacks {target.name} for {damage} damage!")
             if target.health <= 0:
                 print(f"{target.name} has been defeated!")
-                self.gain_xp(120)
+                self.gain_xp(100)
 
     def gain_xp(self, amount):
         self.xp += amount
@@ -46,11 +74,20 @@ class Character:
             self.level += 1
             print(f"LEVEL {self.level} unlocked!")
             self.xp -= self.xp_required
+            self.attack_power += 5
+            print(f"Attack Power : {self.attack_power}")
+            self.max_health += 20
+            print(f"Health : {self.health} / {self.max_health}")
+            self.health += 20
             print(f"current xp : {self.xp} / {self.xp_required}")
 
     def equip_weapon(self, weapon):
-        self.equipped_weapon = weapon
-        self.attack_power +=  5
+        if self.equipped_weapon is None:
+            self.equipped_weapon = weapon
+            self.attack_power +=  5
+            print(f"{self.name} equipped {weapon}!")
+        else:
+            print(f"{self.name} already has a weapon equipped!")
 
     def unequip_weapon(self):
         if self.equipped_weapon is not None:
@@ -86,7 +123,9 @@ class Inventory:
 
 
 hero = Character("Aman", 100, 20)
+# hero.save_game()
 goblin = Character("goblin", 100, 20)
+# goblin.save_game()
 
 aman_inventory = Inventory()
 aman_inventory.weapons.append("Iron Sword")
@@ -122,9 +161,11 @@ while goblin.health > 0 and hero.health > 0:
 while True:
     if goblin.health <= 0 and hero.health > 0:
         print("YOU WIN!")
+        hero.save_game()
         break
     elif hero.health <= 0 and goblin.health > 0:
         print("Game Over!")
+        goblin.save_game()
         break
     use_weapon = int(input( 
     "\n ====== WEAPON==MENU=======\n"
@@ -138,7 +179,7 @@ while True:
     "6. Unequip both weapons \n"
     "7. Show status both \n"
     "8. restore health \n"
-    "enter the number (1 - 7) : "))
+    "enter the number (1 - 8) : "))
     if use_weapon == 1:
         hero.equip_weapon("Iron Sword")
         print("Aman equipped Iron Sword!")
