@@ -1,11 +1,15 @@
 #                            palindrome number check
 
 def palindrome(n):
-    last_digit = n % 10
-    reverse = n // 10
-    if n == reverse:
-        print("palindrome")
+    original = n
+    reverse = 0
+    while n > 0:
+        digit = n % 10
+        reverse = reverse * 10 + digit
+        n = n // 10
+    if original == reverse:
+        return True
     else:
-        print("not palindrome")
+        return False
 
-print("The number is ", palindrome(12321))
+print(palindrome(12321))
