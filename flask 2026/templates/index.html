@@ -41,30 +41,26 @@
             <div class="card shadow-sm p-4">
                 <h3 class="card-title text-center mb-4">Login</h3>
 
-                <form action="/login" method="POST">
+                <form action="/" method="POST">
                     <!-- Email Field -->
                     <div class="mb-3">
-                        <label for="userEmail" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="userEmail" name="email"
-                            placeholder="name@example.com" required>
-                        <div class="form-text">We'll never share your email with anyone else.</div>
+                        <label for="title" class="form-label">Todo Title</label>
+                        <input type="text" class="form-control" name="title" id="title" area-describedby="emailhelp">
                     </div>
 
                     <!-- Password Field -->
                     <div class="mb-3">
-                        <label for="userPassword" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="userPassword" name="password"
-                            placeholder="Enter your password" required>
-                    </div>
+                        <label for="desc" class="form-label">Todo description</label>
+                        <input type="text" class="form-control" name="desc" id="desc" </div>
 
-                    <!-- Checkbox (Optional) -->
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="rememberMe">
-                        <label class="form-check-label" for="rememberMe">Remember me</label>
-                    </div>
+                        <!-- Checkbox (Optional) -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">Remember me</label>
+                        </div>
 
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn btn-primary w-100">Submit</button>
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100">Submit</button>
                 </form>
             </div>
         </div>
@@ -75,30 +71,26 @@
             <thead>
                 <tr>
                     <th scope="col">S.NO</th>
-                    <th scope="col">First</th>
-                    <th scope="col">Last</th>
-                    <th scope="col">Handle</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
+                {% for todo in allTodo %}
                 <tr>
-                    <th scope="row">1</th>
-                    <td>Mark</td>
-                    <td>Otto</td>
-                    <td>@mdo</td>
+                    <th scope="row">{{loop.index}}</th>
+                    <td>{{todo.title}}</td>
+                    <td>{{todo.desc}}</td>
+                    <td>{{todo.date_created}}</td>
+                    <td><a href="delete/{{todo.sno}}" type="button" class="btn btn-outline-dark btn-sn mx-1">Update</button>
+                            <a href="delete/{{todo.sno}}" type="button" class="btn btn-outline-dark btn-sn mx-1">Delete</button>
+                    </td>
                 </tr>
-                <tr>
-                    <th scope="row">2</th>
-                    <td>Jacob</td>
-                    <td>Thornton</td>
-                    <td>@fat</td>
-                </tr>
-                <tr>
-                    <th scope="row">3</th>
-                    <td>John</td>
-                    <td>Doe</td>
-                    <td>@social</td>
-                </tr>
+                {% endfor %}
+
+
             </tbody>
         </table>
     </div>
