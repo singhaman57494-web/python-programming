@@ -60,4 +60,3 @@ def delete(sno):
     db.session.commit()
     return redirect("/")
 
-#"ready for rander"
