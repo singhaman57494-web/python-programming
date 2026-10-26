@@ -1,0 +1,161 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 24px;
+    font-family: Arial, sans-serif;
+    background: #f4f7f6;
+    color: #24332c;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+header h1 {
+    color: #168052;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto 30px;
+}
+
+.card,
+.transactions {
+    background: white;
+    padding: 25px;
+    border-radius: 5px;
+    text-align: center;
+    box-shadow: 0 4px 25px #0000000a;
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #040404;
+}
+
+
+.card p {
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.card:nth-child(1) p {
+    color: #168052;
+}
+
+.card:nth-child(2) p {
+    color: #168052;
+}
+
+.card:nth-child(3) p {
+    color: #dc2626;
+}
+
+
+.transactions {
+    max-width: 1000px;
+    margin: auto;
+}
+
+@media (max-width: 650px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    body {
+        padding: 16px;
+    }
+}
+
+
+/* Add Expense Form */
+.add-expense {
+    max-width: 1000px;
+    margin: 0 auto 30px;
+    padding: 28px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px #0000000a;
+}
+
+.add-expense h2 {
+    margin-top: 0;
+    margin-bottom: 24px;
+    color: #168052;
+    font-size: 24px;
+}
+
+#expense-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+}
+
+#expense-form label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #37483e;
+}
+
+#expense-form input,
+#expense-form select {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #d8e2dc;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 15px;
+    color: #24332c;
+    outline: none;
+}
+
+#expense-form input:focus,
+#expense-form select:focus {
+    border-color: #168052;
+    box-shadow: 0 0 0 3px #1680521a;
+}
+
+#expense-form button {
+    grid-column: 1 / -1;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: #168052;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+#expense-form button:hover {
+    background: #106640;
+}
+
+#expense-form button:active {
+    transform: scale(0.99);
+}
+
+/* Mobile Responsive */
+@media (max-width: 650px) {
+    .add-expense {
+        padding: 20px;
+    }
+
+    #expense-form {
+        grid-template-columns: 1fr;
+    }
+
+    #expense-form button {
+        grid-column: auto;
+    }
+}
