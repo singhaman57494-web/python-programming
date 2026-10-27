@@ -9,6 +9,7 @@ body {
     font-family: Arial, sans-serif;
     background: #f4f7f6;
     color: #24332c;
+    background: linear-gradient(513deg, #5350de, #e46f9e);
 }
 
 header {
@@ -17,7 +18,7 @@ header {
 }
 
 header h1 {
-    color: #168052;
+    color: #0e0f0ff9;
 }
 
 .dashboard {
@@ -35,6 +36,7 @@ header h1 {
     border-radius: 5px;
     text-align: center;
     box-shadow: 0 4px 25px #0000000a;
+    background: linear-gradient(535deg, #db9eda, #55c158);
 }
 
 .card h3 {
@@ -46,6 +48,7 @@ header h1 {
 .card p {
     font-size: 26px;
     font-weight: bold;
+    background: linear-gradient(535deg, #ba84c8, #81e283);
 }
 
 .card:nth-child(1) p {
@@ -57,7 +60,7 @@ header h1 {
 }
 
 .card:nth-child(3) p {
-    color: #dc2626;
+    color: red;
 }
 
 
@@ -85,6 +88,7 @@ header h1 {
     background: #ffffff;
     border-radius: 14px;
     box-shadow: 0 4px 14px #0000000a;
+    background: linear-gradient(535deg, #a584c8, #86d59e);
 }
 
 .add-expense h2 {
@@ -156,6 +160,100 @@ header h1 {
     }
 
     #expense-form button {
+        grid-column: auto;
+    }
+}
+
+
+/* Transaction design */
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    background: #f8faf9;
+    border-radius: 8px;
+}
+
+.delete-button {
+    background: #106640;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.delete-button:hover {
+    background: #b91c1c;
+}
+
+
+/* Bigger Add Income section */
+.add-income {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 30px;
+    padding: 28px;
+    background: linear-gradient(535deg, #d283c6, #96d8aa);
+    border: 1px solid #c4e8d0;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px #0000000a;
+}
+
+.add-income h2 {
+    color: #24332c;
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 24px;
+}
+
+#income-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+}
+
+#income-form label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #37483e;
+}
+
+#income-form input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #d8e2dc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+#income-form button {
+    grid-column: 1 / -1;
+    padding: 14px;
+    background: #168052;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#income-form button:hover {
+    background: #106640;
+}
+
+@media (max-width: 650px) {
+    #income-form {
+        grid-template-columns: 1fr;
+    }
+
+    #income-form button {
         grid-column: auto;
     }
 }
