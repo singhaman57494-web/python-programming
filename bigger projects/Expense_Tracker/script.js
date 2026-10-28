@@ -26,6 +26,7 @@ const expensesElement = document.getElementById("expenses");
 const expenseForm = document.getElementById("expense-form");
 const incomeForm = document.getElementById("income-form");
 const incomeAmountInput = document.getElementById("income-amount");
+const incomeCategoryInput = document.getElementById("income-category");
 const amountInput = document.getElementById("amount");
 const categoryInput = document.getElementById("category");
 
@@ -54,7 +55,9 @@ expenseForm.addEventListener("submit", function (event) {
 
     transactions.push({
         amount: amount,
-        category: category
+        category: category,
+        type: "expense",
+        date: new Date().toLocaleDateString("en-IN")
     });
 
 
@@ -62,7 +65,8 @@ expenseForm.addEventListener("submit", function (event) {
     transaction.className = "transaction-item";
 
     const details = document.createElement("span");
-    details.textContent = `${category}: ₹${amount.toFixed(2)}`;
+    details.textContent =
+        `${category}: ₹${amount.toFixed(2)} (Expense) | ${new Date().toLocaleDateString("en-IN")}`;
 
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "Delete";
@@ -98,20 +102,25 @@ transactions.forEach(function (item) {
     transaction.className = "transaction-item";
 
     const details = document.createElement("span");
-    details.textContent = `${item.category}: ₹${item.amount.toFixed(2)}`;
+    details.textContent =
+        `${item.category}: ₹${item.amount.toFixed(2)} (${item.type === "income" ? "Income" : "Expense"}) | ${item.date || "Old transaction"}`;
 
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "Delete";
     deleteButton.className = "delete-button";
 
     deleteButton.addEventListener("click", function () {
-        const index = transactions.findIndex(
-            t => t.amount === item.amount && t.category === item.category
-        );
+        const index = transactions.indexOf(item);
 
         if (index !== -1) {
             transactions.splice(index, 1);
-            totalExpenses -= item.amount;
+
+            if (item.type === "income") {
+                totalIncome -= item.amount;
+            } else {
+                totalExpenses -= item.amount;
+            }
+
             transaction.remove();
             updateDashboard();
             saveData();
@@ -123,11 +132,11 @@ transactions.forEach(function (item) {
     transactionList.appendChild(transaction);
 });
 
-
-incomeForm.addEventListener("submit", function(event) {
+incomeForm.addEventListener("submit", function (event) {
     event.preventDefault();
 
     const amount = Number(incomeAmountInput.value);
+    const category = incomeCategoryInput.value;
 
     if (!Number.isFinite(amount) || amount <= 0) {
         alert("Please enter a valid income amount.");
@@ -135,6 +144,39 @@ incomeForm.addEventListener("submit", function(event) {
     }
 
     totalIncome += amount;
+    transactions.push({
+        amount: amount,
+        category: category,
+        type: "income",
+        date: new Date().toLocaleDateString("en-IN")
+    });
+    const transaction = document.createElement("div");
+    transaction.className = "transaction-item";
+
+    const details = document.createElement("span");
+    details.textContent =
+        `${category}: ₹${amount.toFixed(2)} (Income) | ${new Date().toLocaleDateString("en-IN")}`;
+
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.className = "delete-button";
+    deleteButton.addEventListener("click", function () {
+        totalIncome -= amount;
+
+        transactions = transactions.filter(function (item) {
+            return !(item.amount === amount &&
+                item.category === category &&
+                item.type === "income");
+        });
+
+        transaction.remove();
+        updateDashboard();
+        saveData();
+    });
+
+    transaction.appendChild(details);
+    transaction.appendChild(deleteButton);
+    transactionList.appendChild(transaction);
 
     updateDashboard();
     saveData();
