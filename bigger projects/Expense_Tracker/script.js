@@ -22,6 +22,8 @@ let totalExpenses = Number(
 const balanceElement = document.getElementById("balance");
 const incomeElement = document.getElementById("income");
 const expensesElement = document.getElementById("expenses");
+const filterCategory = document.getElementById("filter-category");
+const searchInput = document.getElementById("search-transaction");
 
 const expenseForm = document.getElementById("expense-form");
 const incomeForm = document.getElementById("income-form");
@@ -32,13 +34,18 @@ const categoryInput = document.getElementById("category");
 
 const transactionList = document.querySelector(".transactions");
 
+
 function updateDashboard() {
     incomeElement.textContent = `₹${totalIncome.toFixed(2)}`;
     expensesElement.textContent = `₹${totalExpenses.toFixed(2)}`;
 
     const balance = totalIncome - totalExpenses;
     balanceElement.textContent = `₹${balance.toFixed(2)}`;
+
+    // updateChart();
+    // updateIncomeChart();
 }
+
 
 expenseForm.addEventListener("submit", function (event) {
     event.preventDefault();
@@ -83,15 +90,18 @@ expenseForm.addEventListener("submit", function (event) {
         transaction.remove();
         updateDashboard();
         saveData();
+        updateChart();
+        updateIncomeChart();
     });
 
     transaction.appendChild(details);
     transaction.appendChild(deleteButton);
     transactionList.appendChild(transaction);
 
-
     updateDashboard();
     saveData();
+    updateChart();
+    updateIncomeChart();
     expenseForm.reset();
 });
 
@@ -182,3 +192,147 @@ incomeForm.addEventListener("submit", function (event) {
     saveData();
     incomeForm.reset();
 });
+
+
+function filterTransactions() {
+    const searchText = searchInput.value.toLowerCase().trim();
+    const selectedCategory = filterCategory.value;
+    const allTransactions = document.querySelectorAll(".transaction-item");
+
+    allTransactions.forEach(function (transaction) {
+        const details = transaction.querySelector("span").textContent.toLowerCase();
+
+        const matchesSearch = details.includes(searchText);
+        const matchesCategory =
+            selectedCategory === "All" ||
+            details.startsWith(selectedCategory.toLowerCase() + ":");
+
+        transaction.style.display =
+            matchesSearch && matchesCategory ? "flex" : "none";
+    });
+}
+
+searchInput.addEventListener("input", filterTransactions);
+filterCategory.addEventListener("change", filterTransactions);
+
+let expenseChart;
+
+function updateChart() {
+    const chartCanvas = document.getElementById("expense-chart");
+
+    if (!chartCanvas || typeof Chart === "undefined") {
+        return;
+    }
+
+    const categories = ["Food", "Travel", "Shopping", "Bills", "Other"];
+
+    const categoryTotals = categories.map(function (category) {
+        return transactions
+            .filter(function (item) {
+                return item.type === "expense" &&
+                    item.category === category;
+            })
+            .reduce(function (total, item) {
+                return total + Number(item.amount);
+            }, 0);
+    });
+
+    if (expenseChart) {
+        expenseChart.data.datasets[0].data = categoryTotals;
+        expenseChart.update();
+        return;
+    }
+
+    expenseChart = new Chart(chartCanvas, {
+        type: "bar",
+        data: {
+            labels: categories,
+            datasets: [{
+                label: "Expenses by Category (₹)",
+                data: categoryTotals,
+                backgroundColor: [
+                    "#fb923c",
+                    "#f97316",
+                    "#fdba74",
+                    "#ea580c",
+                    "#fb923c"
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+
+let incomeChart;
+
+function updateIncomeChart() {
+    const chartCanvas = document.getElementById("income-chart");
+
+    if (!chartCanvas || typeof Chart === "undefined") {
+        return;
+    }
+
+    const categories = [
+        "Salary",
+        "Pocket Money",
+        "Gift",
+        "Other Income"
+    ];
+
+    const categoryTotals = categories.map(function (category) {
+        return transactions
+            .filter(function (item) {
+                return item.type === "income" &&
+                    item.category === category;
+            })
+            .reduce(function (total, item) {
+                return total + Number(item.amount);
+            }, 0);
+    });
+
+    if (incomeChart) {
+        incomeChart.data.datasets[0].data = categoryTotals;
+        incomeChart.update();
+        return;
+    }
+
+    incomeChart = new Chart(chartCanvas, {
+        type: "bar",
+        data: {
+            labels: categories,
+            datasets: [{
+                label: "Income by Category (₹)",
+                data: categoryTotals,
+                backgroundColor: [
+                    "#60a5fa",
+                    "#3b82f6",
+                    "#93c5fd",
+                    "#2563eb"
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+updateChart();
+updateIncomeChart();

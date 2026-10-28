@@ -257,3 +257,109 @@ header h1 {
         grid-column: auto;
     }
 }
+ /*               Graph chart */
+
+
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 16px;
+}
+
+.chart-section {
+    min-width: 0;
+    padding: 20px;
+    background: linear-gradient(535deg, #5e75bc, #5cc67c);
+    border-radius: 26px;
+    box-shadow: 0 4px 12px rgba(144, 83, 83, 0.08);
+}
+
+.chart-section h2 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.chart-section canvas {
+    display: block;
+    width: 100% !important;
+    height: 300px !important;
+}
+
+@media (max-width: 700px) {
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/*                search or filter box  */
+
+
+/* Search and Filter Styling */
+#search-transaction,
+#filter-category {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background-color: #ffffff;
+    color: #1e293b;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#search-transaction:focus,
+#filter-category:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+#search-transaction::placeholder {
+    color: #94a3b8;
+}
+
+.transactions label[for="search-transaction"],
+.transactions label[for="filter-category"] {
+    display: block;
+    margin: 16px 0 8px;
+    font-weight: 600;
+    color: #334155;
+}
+
+/* Stylish Income Category Dropdown */
+#income-category {
+    width: 100%;
+    min-height: 50px;
+    padding: 12px 16px;
+    border: 2px solid #bbf7d0;
+    border-radius: 12px;
+    background-color: #f0fdf4;
+    color: #166534;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+#income-category:hover {
+    border-color: #4ade80;
+    background-color: #ecfdf5;
+}
+
+#income-category:focus {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+}
+
+#income-category option {
+    background-color: #ffffff;
+    color: #166534;
+    font-size: 15px;
+    padding: 10px;
+}
