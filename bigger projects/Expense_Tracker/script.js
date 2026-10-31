@@ -90,6 +90,66 @@ expenseForm.addEventListener("submit", function (event) {
 
     transactions.push(newTransaction);
 
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit";
+    editButton.className = "edit-button";
+
+    editButton.addEventListener("click", function () {
+        const updatedAmountInput = prompt(
+            "Enter updated expense amount:",
+            newTransaction.amount
+        );
+
+        if (updatedAmountInput === null) {
+            return;
+        }
+
+        const updatedAmount = Number(updatedAmountInput);
+
+        if (!Number.isFinite(updatedAmount) || updatedAmount <= 0) {
+            alert("Please enter a valid amount.");
+            return;
+        }
+
+        const updatedCategory = prompt(
+            "Enter updated category:",
+            newTransaction.category
+        );
+
+        if (updatedCategory === null) {
+            return;
+        }
+
+        if (updatedCategory.trim() === "") {
+            alert("Please enter a valid category.");
+            return;
+        }
+
+        const monthlyExpenses = getMonthlyExpenses();
+
+        if (
+            monthlyBudget > 0 &&
+            monthlyExpenses - newTransaction.amount + updatedAmount > monthlyBudget
+        ) {
+            alert("Monthly budget limit exceeded!");
+            return;
+        }
+
+        totalExpenses = totalExpenses - newTransaction.amount + updatedAmount;
+
+        newTransaction.amount = updatedAmount;
+        newTransaction.category = updatedCategory.trim();
+
+        details.textContent =
+            `${newTransaction.category}: ₹${newTransaction.amount.toFixed(2)} (Expense) | ${date}`;
+
+        updateDashboard();
+        saveData();
+        updateChart();
+        updateIncomeChart();
+        updateBudget();
+    });
+
     const transaction = document.createElement("div");
     transaction.className = "transaction-item";
 
@@ -104,7 +164,7 @@ expenseForm.addEventListener("submit", function (event) {
     // Deletes this specific expense and updates the dashboard.
 
     deleteButton.addEventListener("click", function () {
-        totalExpenses -= amount;
+        totalExpenses -= newTransaction.amount;
 
         const index = transactions.indexOf(newTransaction);
 
@@ -122,6 +182,7 @@ expenseForm.addEventListener("submit", function (event) {
     });
 
     transaction.appendChild(details);
+    transaction.appendChild(editButton);
     transaction.appendChild(deleteButton);
     transactionList.appendChild(transaction);
 
@@ -138,6 +199,66 @@ expenseForm.addEventListener("submit", function (event) {
 //                          Displays saved transactions and allows users to delete them.
 
 transactions.forEach(function (item) {
+    const editButton = document.createElement("button");
+    editButton.textContent = "Update ";
+    editButton.className = "edit-button";
+
+    editButton.addEventListener("click", function () {
+        const updatedAmountInput = prompt(
+            "Enter updated amount:",
+            item.amount
+        );
+
+        if (updatedAmountInput === null) return;
+
+        const updatedAmount = Number(updatedAmountInput);
+
+        if (!Number.isFinite(updatedAmount) || updatedAmount <= 0) {
+            alert("Please enter a valid amount.");
+            return;
+        }
+
+        const updatedCategory = prompt(
+            "Enter updated category:",
+            item.category
+        );
+
+        if (updatedCategory === null) return;
+
+        if (updatedCategory.trim() === "") {
+            alert("Please enter a valid category.");
+            return;
+        }
+
+        if (item.type === "expense") {
+            const monthlyExpenses = getMonthlyExpenses();
+
+            if (
+                monthlyBudget > 0 &&
+                monthlyExpenses - item.amount + updatedAmount > monthlyBudget
+            ) {
+                alert("Monthly budget limit exceeded!");
+                return;
+            }
+
+            totalExpenses = totalExpenses - item.amount + updatedAmount;
+        } else {
+            totalIncome = totalIncome - item.amount + updatedAmount;
+        }
+
+        item.amount = updatedAmount;
+        item.category = updatedCategory.trim();
+
+        details.textContent =
+            `${item.category}: ₹${item.amount.toFixed(2)} (${item.type === "income" ? "Income" : "Expense"}) | ${item.date || "Old transaction"}`;
+
+        updateDashboard();
+        saveData();
+        updateChart();
+        updateIncomeChart();
+        updateBudget();
+    });
+
     const transaction = document.createElement("div");
     transaction.className = "transaction-item";
 
@@ -174,6 +295,7 @@ transactions.forEach(function (item) {
     });
 
     transaction.appendChild(details);
+    transaction.appendChild(editButton);
     transaction.appendChild(deleteButton);
     transactionList.appendChild(transaction);
 });
