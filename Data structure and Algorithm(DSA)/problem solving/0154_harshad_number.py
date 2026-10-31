@@ -1,6 +1,8 @@
 #                   Harshad number
 
 def harshad(n):
+    if n == 0:
+        return False
     original = n
     total = 0
 
