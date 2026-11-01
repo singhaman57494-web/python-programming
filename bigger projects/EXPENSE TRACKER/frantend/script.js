@@ -1,4 +1,24 @@
+const API_URL = "http://127.0.0.1:5000";
 
+async function fetchTransactions() {
+    try {
+        const response = await fetch(`${API_URL}/transactions`);
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch transactions");
+        }
+
+        const transactions = await response.json();
+
+        console.log("Transactions:", transactions);
+
+        return transactions;
+
+    } catch (error) {
+        console.error("Error:", error);
+        return [];
+    }
+}
 
 let transactions = JSON.parse(
     localStorage.getItem("transactions") || "[]"
@@ -54,7 +74,7 @@ function updateDashboard() {
 
 //                Handles adding new expenses and deleting existing expenses.
 
-expenseForm.addEventListener("submit", function (event) {
+expenseForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const amount = Number(amountInput.value);
@@ -87,6 +107,32 @@ expenseForm.addEventListener("submit", function (event) {
         type: "expense",
         date: date
     };
+
+    try {
+        const response = await fetch(`${API_URL}/transactions`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                amount: amount,
+                category: category,
+                type: "expense"
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to save expense");
+        }
+
+        const result = await response.json();
+        newTransaction.id = result.id;
+
+    } catch (error) {
+        console.error("Error saving expense:", error);
+        alert("Expense could not be saved to database.");
+        return;
+    }
 
     transactions.push(newTransaction);
 
