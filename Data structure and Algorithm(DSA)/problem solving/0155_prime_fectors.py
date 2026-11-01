@@ -11,9 +11,9 @@ def prime_fectors(n):
         else:
             i += 1
 
-    print(prime)
+    return prime
 
 
-prime_fectors(12)
+print(prime_fectors(12))
 
     
