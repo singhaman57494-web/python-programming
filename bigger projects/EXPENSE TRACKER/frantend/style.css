@@ -437,3 +437,11 @@ header h1 {
     margin-top: 12px;
     font-weight: bold;
 }
+
+#transaction-list {
+    margin-top: 20px;
+}
+
+.transaction-item {
+    margin-bottom: 12px;
+}

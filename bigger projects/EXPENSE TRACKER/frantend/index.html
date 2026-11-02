@@ -91,6 +91,9 @@
 
         <section class="transactions">
             <h2>Recent Transactions</h2>
+
+            <p id="loadingMessage"></p>
+
             <label for="search-transaction">Search Transactions:</label>
             <input type="text" id="search-transaction" placeholder="Search Food, Travel, Shopping...">
             <label for="filter-category">Filter Transactions:</label>
@@ -107,7 +110,7 @@
                 <option value="Other">Other</option>
             </select>
 
-            <p>Your transactions will appear here.</p>
+            <div id="transaction-list"></div>
         </section>
         <section class="charts-container">
             <div class="chart-section">

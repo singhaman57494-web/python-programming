@@ -1,5 +1,36 @@
 const API_URL = "http://127.0.0.1:5000";
 
+let transactions = [];
+
+let monthlyBudget = Number(localStorage.getItem("monthlyBudget")) || 0;
+
+let totalIncome = 0;
+
+let totalExpenses = 0
+
+const balanceElement = document.getElementById("balance");
+const incomeElement = document.getElementById("income");
+const expensesElement = document.getElementById("expenses");
+const filterCategory = document.getElementById("filter-category");
+const searchInput = document.getElementById("search-transaction");
+
+const expenseForm = document.getElementById("expense-form");
+const incomeForm = document.getElementById("income-form");
+const incomeAmountInput = document.getElementById("income-amount");
+const incomeCategoryInput = document.getElementById("income-category");
+const amountInput = document.getElementById("amount");
+const categoryInput = document.getElementById("category");
+
+const transactionList = document.getElementById("transaction-list");
+const budgetInput = document.getElementById("budget-limit");
+const setBudgetButton = document.getElementById("set-budget");
+const loadingMessage = document.getElementById("loadingMessage");
+const monthlyLimitElement = document.getElementById("monthly-limit");
+const monthlySpentElement = document.getElementById("monthly-spent");
+const remainingBudgetElement = document.getElementById("remaining-budget");
+const budgetMessage = document.getElementById("budget-message");
+
+
 async function fetchTransactions() {
     try {
         const response = await fetch(`${API_URL}/transactions`);
@@ -15,51 +46,43 @@ async function fetchTransactions() {
         return transactions;
 
     } catch (error) {
-        console.error("Error:", error);
-        return [];
+        console.error("Error fetching transactions:", error);
+        throw error;
     }
 }
 
-let transactions = JSON.parse(
-    localStorage.getItem("transactions") || "[]"
-);
-let monthlyBudget = Number(localStorage.getItem("monthlyBudget")) || 0;
 
-let totalIncome = Number(
-    localStorage.getItem("totalIncome") ?? 8000
-);
+async function loadTransactions() {
+    loadingMessage.textContent = "Loading transactions...";
 
-let totalExpenses = Number(
-    localStorage.getItem("totalExpenses") ?? 2500
-);
+    try {
+        const databaseTransactions = await fetchTransactions();
 
-const balanceElement = document.getElementById("balance");
-const incomeElement = document.getElementById("income");
-const expensesElement = document.getElementById("expenses");
-const filterCategory = document.getElementById("filter-category");
-const searchInput = document.getElementById("search-transaction");
+        transactions = databaseTransactions;
 
-const expenseForm = document.getElementById("expense-form");
-const incomeForm = document.getElementById("income-form");
-const incomeAmountInput = document.getElementById("income-amount");
-const incomeCategoryInput = document.getElementById("income-category");
-const amountInput = document.getElementById("amount");
-const categoryInput = document.getElementById("category");
+        totalIncome = transactions
+            .filter(item => item.type === "income")
+            .reduce((total, item) => total + Number(item.amount), 0);
 
-const transactionList = document.querySelector(".transactions");
-const budgetInput = document.getElementById("budget-limit");
-const setBudgetButton = document.getElementById("set-budget");
-const monthlyLimitElement = document.getElementById("monthly-limit");
-const monthlySpentElement = document.getElementById("monthly-spent");
-const remainingBudgetElement = document.getElementById("remaining-budget");
-const budgetMessage = document.getElementById("budget-message");
+        totalExpenses = transactions
+            .filter(item => item.type === "expense")
+            .reduce((total, item) => total + Number(item.amount), 0);
 
-//                 Saves income, expenses, and transactions in local storage.
+        renderTransactions();
 
-function saveData() {
-    localStorage.setItem("totalIncome", totalIncome);
-    localStorage.setItem("totalExpenses", totalExpenses);
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+        updateDashboard();
+        updateChart();
+        updateIncomeChart();
+        updateBudget();
+
+        loadingMessage.textContent = "";
+
+    } catch (error) {
+        console.error("Error loading transactions:", error);
+
+        loadingMessage.textContent =
+            "Unable to load transactions. Please check your backend connection and refresh.";
+    }
 }
 
 //                 Updates the dashboard income, expenses, and available balance.
@@ -140,15 +163,13 @@ expenseForm.addEventListener("submit", async function (event) {
     editButton.textContent = "Edit";
     editButton.className = "edit-button";
 
-    editButton.addEventListener("click", function () {
+    editButton.addEventListener("click", async function () {
         const updatedAmountInput = prompt(
             "Enter updated expense amount:",
             newTransaction.amount
         );
 
-        if (updatedAmountInput === null) {
-            return;
-        }
+        if (updatedAmountInput === null) return;
 
         const updatedAmount = Number(updatedAmountInput);
 
@@ -162,9 +183,7 @@ expenseForm.addEventListener("submit", async function (event) {
             newTransaction.category
         );
 
-        if (updatedCategory === null) {
-            return;
-        }
+        if (updatedCategory === null) return;
 
         if (updatedCategory.trim() === "") {
             alert("Please enter a valid category.");
@@ -181,19 +200,33 @@ expenseForm.addEventListener("submit", async function (event) {
             return;
         }
 
-        totalExpenses = totalExpenses - newTransaction.amount + updatedAmount;
+        try {
+            const response = await fetch(
+                `${API_URL}/transactions/${newTransaction.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        amount: updatedAmount,
+                        category: updatedCategory.trim()
+                    })
+                }
+            );
 
-        newTransaction.amount = updatedAmount;
-        newTransaction.category = updatedCategory.trim();
+            if (!response.ok) {
+                throw new Error("Failed to update transaction");
+            }
 
-        details.textContent =
-            `${newTransaction.category}: ₹${newTransaction.amount.toFixed(2)} (Expense) | ${date}`;
+            await loadTransactions();
 
-        updateDashboard();
-        saveData();
-        updateChart();
-        updateIncomeChart();
-        updateBudget();
+            alert("Transaction updated successfully!");
+
+        } catch (error) {
+            console.error("Update error:", error);
+            alert("Transaction could not be updated.");
+        }
     });
 
     const transaction = document.createElement("div");
@@ -209,22 +242,31 @@ expenseForm.addEventListener("submit", async function (event) {
 
     // Deletes this specific expense and updates the dashboard.
 
-    deleteButton.addEventListener("click", function () {
-        totalExpenses -= newTransaction.amount;
+    deleteButton.addEventListener("click", async function () {
+        const confirmDelete = confirm("Are you sure you want to delete this transaction?");
 
-        const index = transactions.indexOf(newTransaction);
+        if (!confirmDelete) return;
 
-        if (index !== -1) {
-            transactions.splice(index, 1);
+        try {
+            const response = await fetch(
+                `${API_URL}/transactions/${newTransaction.id}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to delete transaction");
+            }
+
+            await loadTransactions();
+
+            alert("Transaction deleted successfully!");
+
+        } catch (error) {
+            console.error("Delete error:", error);
+            alert("Transaction could not be deleted.");
         }
-
-        transaction.remove();
-
-        updateDashboard();
-        saveData();
-        updateChart();
-        updateIncomeChart();
-        updateBudget();
     });
 
     transaction.appendChild(details);
@@ -233,7 +275,6 @@ expenseForm.addEventListener("submit", async function (event) {
     transactionList.appendChild(transaction);
 
     updateDashboard();
-    saveData();
     updateChart();
     updateIncomeChart();
     updateBudget();
@@ -244,175 +285,173 @@ expenseForm.addEventListener("submit", async function (event) {
 
 //                          Displays saved transactions and allows users to delete them.
 
-transactions.forEach(function (item) {
-    const editButton = document.createElement("button");
-    editButton.textContent = "Update ";
-    editButton.className = "edit-button";
+function renderTransactions() {
+    transactionList.innerHTML = "";
 
-    editButton.addEventListener("click", function () {
-        const updatedAmountInput = prompt(
-            "Enter updated amount:",
-            item.amount
-        );
+    transactions.forEach(function (item) {
+        const editButton = document.createElement("button");
+        editButton.textContent = "Update ";
+        editButton.className = "edit-button";
 
-        if (updatedAmountInput === null) return;
+        editButton.addEventListener("click", async function () {
+            const updatedAmountInput = prompt(
+                "Enter updated amount:",
+                item.amount
+            );
 
-        const updatedAmount = Number(updatedAmountInput);
+            if (updatedAmountInput === null) return;
 
-        if (!Number.isFinite(updatedAmount) || updatedAmount <= 0) {
-            alert("Please enter a valid amount.");
-            return;
-        }
+            const updatedAmount = Number(updatedAmountInput);
 
-        const updatedCategory = prompt(
-            "Enter updated category:",
-            item.category
-        );
-
-        if (updatedCategory === null) return;
-
-        if (updatedCategory.trim() === "") {
-            alert("Please enter a valid category.");
-            return;
-        }
-
-        if (item.type === "expense") {
-            const monthlyExpenses = getMonthlyExpenses();
-
-            if (
-                monthlyBudget > 0 &&
-                monthlyExpenses - item.amount + updatedAmount > monthlyBudget
-            ) {
-                alert("Monthly budget limit exceeded!");
+            if (!Number.isFinite(updatedAmount) || updatedAmount <= 0) {
+                alert("Please enter a valid amount.");
                 return;
             }
 
-            totalExpenses = totalExpenses - item.amount + updatedAmount;
-        } else {
-            totalIncome = totalIncome - item.amount + updatedAmount;
-        }
+            const updatedCategory = prompt(
+                "Enter updated category:",
+                item.category
+            );
 
-        item.amount = updatedAmount;
-        item.category = updatedCategory.trim();
+            if (updatedCategory === null) return;
 
+            if (updatedCategory.trim() === "") {
+                alert("Please enter a valid category.");
+                return;
+            }
+
+            if (item.type === "expense") {
+                const monthlyExpenses = getMonthlyExpenses();
+
+                if (
+                    monthlyBudget > 0 &&
+                    monthlyExpenses - item.amount + updatedAmount > monthlyBudget
+                ) {
+                    alert("Monthly budget limit exceeded!");
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/transactions/${item.id}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            amount: updatedAmount,
+                            category: updatedCategory.trim()
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to update transaction");
+                }
+
+                await loadTransactions();
+
+                alert("Transaction updated successfully!");
+
+            } catch (error) {
+                console.error("Update error:", error);
+                alert("Transaction could not be updated.");
+            }
+        });
+
+        const transaction = document.createElement("div");
+        transaction.className = "transaction-item";
+
+        const details = document.createElement("span");
         details.textContent =
             `${item.category}: ₹${item.amount.toFixed(2)} (${item.type === "income" ? "Income" : "Expense"}) | ${item.date || "Old transaction"}`;
 
-        updateDashboard();
-        saveData();
-        updateChart();
-        updateIncomeChart();
-        updateBudget();
-    });
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.className = "delete-button";
 
-    const transaction = document.createElement("div");
-    transaction.className = "transaction-item";
+        // Deletes a saved transaction and refreshes all related data.
 
-    const details = document.createElement("span");
-    details.textContent =
-        `${item.category}: ₹${item.amount.toFixed(2)} (${item.type === "income" ? "Income" : "Expense"}) | ${item.date || "Old transaction"}`;
+        deleteButton.addEventListener("click", async function () {
+            const confirmDelete = confirm("Are you sure you want to delete this transaction?");
 
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
-    deleteButton.className = "delete-button";
+            if (!confirmDelete) return;
 
-    // Deletes a saved transaction and refreshes all related data.
+            try {
+                const response = await fetch(
+                    `${API_URL}/transactions/${item.id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
 
-    deleteButton.addEventListener("click", function () {
-        const index = transactions.indexOf(item);
+                if (!response.ok) {
+                    throw new Error("Failed to delete transaction");
+                }
 
-        if (index !== -1) {
-            transactions.splice(index, 1);
+                await loadTransactions();
 
-            if (item.type === "income") {
-                totalIncome -= item.amount;
-            } else {
-                totalExpenses -= item.amount;
+                alert("Transaction deleted successfully!");
+
+            } catch (error) {
+                console.error("Delete error:", error);
+                alert("Transaction could not be deleted.");
             }
+        });
 
-            transaction.remove();
-
-            updateDashboard();
-            saveData();
-            updateChart();
-            updateIncomeChart();
-            updateBudget();
-        }
+        transaction.appendChild(details);
+        transaction.appendChild(editButton);
+        transaction.appendChild(deleteButton);
+        transactionList.appendChild(transaction);
     });
-
-    transaction.appendChild(details);
-    transaction.appendChild(editButton);
-    transaction.appendChild(deleteButton);
-    transactionList.appendChild(transaction);
-});
+}
 
 //                    Handles adding new income and deleting existing income.
-
-incomeForm.addEventListener("submit", function (event) {
+incomeForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const amount = Number(incomeAmountInput.value);
-    const category = incomeCategoryInput.value;
-    const date = new Date().toLocaleDateString("en-IN");
-
-    // Validates the income amount.
+    const category = incomeCategoryInput.value.trim();
 
     if (!Number.isFinite(amount) || amount <= 0) {
         alert("Please enter a valid income amount.");
         return;
     }
 
-    totalIncome += amount;
+    if (category === "") {
+        alert("Please enter a valid category.");
+        return;
+    }
 
-    const newTransaction = {
-        amount: amount,
-        category: category,
-        type: "income",
-        date: date
-    };
+    try {
+        const response = await fetch(`${API_URL}/transactions`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                amount: amount,
+                category: category,
+                type: "income"
+            })
+        });
 
-    transactions.push(newTransaction);
-
-    const transaction = document.createElement("div");
-    transaction.className = "transaction-item";
-
-    const details = document.createElement("span");
-    details.textContent =
-        `${category}: ₹${amount.toFixed(2)} (Income) | ${date}`;
-
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
-    deleteButton.className = "delete-button";
-
-    // Deletes this specific income and updates the dashboard.
-
-    deleteButton.addEventListener("click", function () {
-        totalIncome -= amount;
-
-        const index = transactions.indexOf(newTransaction);
-
-        if (index !== -1) {
-            transactions.splice(index, 1);
+        if (!response.ok) {
+            throw new Error("Failed to save income");
         }
 
-        transaction.remove();
+        await loadTransactions();
 
-        updateDashboard();
-        saveData();
-        updateChart();
-        updateIncomeChart();
-    });
+        incomeForm.reset();
 
-    transaction.appendChild(details);
-    transaction.appendChild(deleteButton);
-    transactionList.appendChild(transaction);
+        alert("Income added successfully!");
 
-    updateDashboard();
-    saveData();
-    updateChart();
-    updateIncomeChart();
-
-    incomeForm.reset();
+    } catch (error) {
+        console.error("Income save error:", error);
+        alert("Income could not be saved to database.");
+    }
 });
 
 //                      Filters transactions by search text and selected category.
@@ -630,8 +669,4 @@ function getMonthlyExpenses() {
         }, 0);
 }
 
-// Initializes the dashboard, charts, and monthly budget when the page loads.
-updateDashboard();
-updateChart();
-updateIncomeChart();
-updateBudget();
+loadTransactions();
