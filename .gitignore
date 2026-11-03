@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 .env
 .venv/
+
+# Python environment
+venv/
+
+# Local database files
+*.db
