@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker - Notification</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .notification-box {
+            width: 90%;
+            max-width: 430px;
+            padding: 35px 25px;
+            background: white;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+        }
+
+        .notification-icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .secondary {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="notification-box">
+        <div class="notification-icon" id="icon">ℹ️</div>
+
+        <h2 id="title">Notification</h2>
+
+        <p id="message">Please wait...</p>
+
+        <div class="actions" id="actions"></div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+
+        const params = new URLSearchParams(window.location.search);
+
+        const type = params.get("type");
+        const action = params.get("action");
+        const id = params.get("id");
+
+        const icon = document.getElementById("icon");
+        const title = document.getElementById("title");
+        const message = document.getElementById("message");
+        const actions = document.getElementById("actions");
+
+        function showResult(resultIcon, resultTitle, resultMessage) {
+            icon.textContent = resultIcon;
+            title.textContent = resultTitle;
+            message.textContent = resultMessage;
+
+            actions.innerHTML = `
+                <button class="primary" onclick="goBack()">
+                    Okay
+                </button>
+            `;
+        }
+
+        function goBack() {
+            window.location.href = "index.html";
+        }
+
+        function createButton(text, className, callback) {
+            const button = document.createElement("button");
+            button.textContent = text;
+            button.className = className;
+            button.addEventListener("click", callback);
+            actions.appendChild(button);
+            return button;
+        }
+
+        if (type === "confirm" && action === "delete" && id) {
+
+            icon.textContent = "⚠️";
+            title.textContent = "Confirm Delete";
+            message.textContent =
+                "Are you sure you want to delete this transaction?";
+
+            createButton("Cancel", "secondary", goBack);
+
+            createButton("Yes, Delete", "danger", async function () {
+                actions.querySelectorAll("button").forEach(
+                    button => button.disabled = true
+                );
+
+                message.textContent = "Deleting transaction...";
+
+                try {
+                    const response = await fetch(
+                        `${API_URL}/transactions/${encodeURIComponent(id)}`,
+                        { method: "DELETE" }
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(
+                            result.error || "Failed to delete transaction"
+                        );
+                    }
+
+                    showResult(
+                        "✅",
+                        "Deleted Successfully",
+                        result.message || "Transaction deleted successfully!"
+                    );
+
+                } catch (error) {
+                    showResult(
+                        "❌",
+                        "Delete Failed",
+                        error.message || "Transaction could not be deleted."
+                    );
+                }
+            });
+
+        } else if (type === "result") {
+            const status = params.get("status");
+            const resultMessage = params.get("message");
+
+            if (status === "success") {
+                showResult(
+                    "✅",
+                    "Success",
+                    resultMessage || "Operation completed successfully!"
+                );
+            } else if (status === "error") {
+                showResult(
+                    "❌",
+                    "Something Went Wrong",
+                    resultMessage || "Please try again."
+                );
+            } else if (status === "warning") {
+                showResult(
+                    "⚠️",
+                    "Warning",
+                    resultMessage || "Please check your information."
+                );
+            } else {
+                showResult(
+                    "❌",
+                    "Invalid Request",
+                    "The requested notification could not be opened."
+                );
+            }
+        } else {
+            showResult(
+                "❌",
+                "Invalid Request",
+                "The requested notification could not be opened."
+            );
+        }
+    </script>
+
+</body>
+
+</html>

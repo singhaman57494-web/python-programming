@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Transaction</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .edit-box {
+            width: 90%;
+            max-width: 430px;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+        }
+
+        h2 {
+            text-align: center;
+            color: #1e293b;
+        }
+
+        label {
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 7px;
+            color: #334155;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .save {
+            background: #2563eb;
+            color: white;
+        }
+
+        .cancel {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            color: #dc2626;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="edit-box">
+        <h2>Edit Transaction</h2>
+
+        <form id="editForm">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" min="0.01" step="0.01" required>
+
+            <label for="category">Category</label>
+            <select id="category" required>
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Bills">Bills</option>
+                <option value="Salary">Salary</option>
+                <option value="Pocket Money">Pocket Money</option>
+                <option value="Gift">Gift</option>
+                <option value="Other Income">Other Income</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <div class="buttons">
+                <button type="button" class="cancel" onclick="goBack()">
+                    Cancel
+                </button>
+
+                <button type="submit" class="save">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+        const params = new URLSearchParams(window.location.search);
+        const transactionId = params.get("id");
+
+        const amountInput = document.getElementById("amount");
+        const categoryInput = document.getElementById("category");
+        const message = document.getElementById("message");
+        const form = document.getElementById("editForm");
+
+        function goBack() {
+            window.location.href = "index.html";
+        }
+
+        async function loadTransaction() {
+            try {
+                if (!transactionId) {
+                    throw new Error("Transaction ID is missing.");
+                }
+
+                const response = await fetch(`${API_URL}/transactions`);
+
+                if (!response.ok) {
+                    throw new Error("Could not load transactions.");
+                }
+
+                const transactions = await response.json();
+
+                const transaction = transactions.find(
+                    item => String(item.id) === transactionId
+                );
+
+                if (!transaction) {
+                    throw new Error("Transaction not found.");
+                }
+
+                amountInput.value = transaction.amount;
+                categoryInput.value = transaction.category;
+
+            } catch (error) {
+                message.textContent = error.message;
+                form.querySelectorAll("input, button").forEach(
+                    element => element.disabled = true
+                );
+            }
+        }
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const amount = Number(amountInput.value);
+            const category = categoryInput.value.trim();
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+                message.textContent = "Please enter a valid amount.";
+                return;
+            }
+
+            if (!category) {
+                message.textContent = "Please enter a valid category.";
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/transactions/${encodeURIComponent(transactionId)}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            amount: amount,
+                            category: category
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || "Failed to update transaction.");
+                }
+
+                window.location.href =
+                    "notification.html?type=result&status=success&message=" +
+                    encodeURIComponent("Transaction updated successfully!");
+
+            } catch (error) {
+                message.textContent = error.message;
+            }
+        });
+
+        loadTransaction();
+    </script>
+</body>
+
+</html>
