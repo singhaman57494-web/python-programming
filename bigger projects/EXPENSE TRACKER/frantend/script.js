@@ -102,39 +102,27 @@ function updateDashboard() {
 
 //                Handles adding new expenses and deleting existing expenses.
 
+
 expenseForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const amount = Number(amountInput.value);
     const category = categoryInput.value;
-    const date = new Date().toLocaleDateString("en-IN");
-
-    // Validates the expense amount.
 
     if (!Number.isFinite(amount) || amount <= 0) {
         showNotification("error", "Please enter a valid amount.");
         return;
     }
 
-    // Calculates the total expenses for the current month.
-
     const monthlyExpenses = getMonthlyExpenses();
 
-    // Prevents adding an expense that exceeds the monthly budget.
-
     if (monthlyBudget > 0 && monthlyExpenses + amount > monthlyBudget) {
-        showNotification("warning", "Monthly budget limit exceeded! Increase your budget to add this expense.");
+        showNotification(
+            "warning",
+            "Monthly budget limit exceeded! Increase your budget to add this expense."
+        );
         return;
     }
-
-    totalExpenses += amount;
-
-    const newTransaction = {
-        amount: amount,
-        category: category,
-        type: "expense",
-        date: date
-    };
 
     try {
         const response = await fetch(`${API_URL}/transactions`, {
@@ -153,59 +141,18 @@ expenseForm.addEventListener("submit", async function (event) {
             throw new Error("Failed to save expense");
         }
 
-        const result = await response.json();
-        newTransaction.id = result.id;
+        await loadTransactions();
+
+        expenseForm.reset();
+
+        showNotification("success", "Expense added successfully!");
 
     } catch (error) {
         console.error("Error saving expense:", error);
         showNotification("error", "Expense could not be saved to database.");
-        return;
     }
-
-    transactions.push(newTransaction);
-
-    const editButton = document.createElement("button");
-    editButton.textContent = "update";
-    editButton.className = "edit-button";
-
-    editButton.addEventListener("click", function () {
-        window.location.href =
-            `edit-transactions.html?id=${newTransaction.id}`;
-    });
-
-    const transaction = document.createElement("div");
-    transaction.className = "transaction-item";
-
-    const details = document.createElement("span");
-    details.textContent =
-        `${category}: ₹${amount.toFixed(2)} (Expense) | ${date}`;
-
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
-    deleteButton.className = "delete-button";
-
-    // Deletes this specific expense and updates the dashboard.
-
-
-    deleteButton.addEventListener("click", function () {
-        window.location.href =
-            `notification.html?type=confirm&action=delete&id=${newTransaction.id}`;
-    });
-
-
-
-    transaction.appendChild(details);
-    transaction.appendChild(editButton);
-    transaction.appendChild(deleteButton);
-    transactionList.appendChild(transaction);
-
-    updateDashboard();
-    updateChart();
-    updateIncomeChart();
-    updateBudget();
-
-    expenseForm.reset();
 });
+
 
 
 //                          Displays saved transactions and allows users to delete them.

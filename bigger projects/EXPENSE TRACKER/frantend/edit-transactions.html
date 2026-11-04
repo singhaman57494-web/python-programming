@@ -159,6 +159,35 @@
                 }
 
                 amountInput.value = transaction.amount;
+
+                const expenseCategories = [
+                    "Food",
+                    "Travel",
+                    "Shopping",
+                    "Bills",
+                    "Other"
+                ];
+
+                const incomeCategories = [
+                    "Salary",
+                    "Pocket Money",
+                    "Gift",
+                    "Other Income"
+                ];
+
+                const categories = transaction.type === "expense"
+                    ? expenseCategories
+                    : incomeCategories;
+
+                categoryInput.innerHTML = "";
+
+                categories.forEach(function (category) {
+                    const option = document.createElement("option");
+                    option.value = category;
+                    option.textContent = category;
+                    categoryInput.appendChild(option);
+                });
+
                 categoryInput.value = transaction.category;
 
             } catch (error) {
