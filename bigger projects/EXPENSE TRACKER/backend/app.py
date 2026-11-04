@@ -1,4 +1,4 @@
-
+import os
 from flask import Flask, jsonify, request
 from config import Config
 from sqlalchemy import text
@@ -8,7 +8,17 @@ import math
 from flask_cors import CORS  # type: ignore[reportMissingModuleSource]
 
 app = Flask(__name__)
-CORS(app)
+CORS(
+    app,
+    resources={
+        r"/transactions*": {
+            "origins": os.getenv(
+                "FRONTEND_ORIGIN",
+                "http://127.0.0.1:5500"
+            )
+        }
+    }
+)
 
 app.config.from_object(Config)
 
@@ -29,14 +39,12 @@ def home():
 @app.route("/db-test")
 def db_test():
     try:
-        result = db.session.execute(
-            text("SELECT current_database()")
-        ).scalar()
+        db.session.execute(text("SELECT 1"))
+        return jsonify({"status": "Database connected"})
 
-        return jsonify({"database": result})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        app.logger.exception("Database connection test failed")
+        return jsonify({"error": "Database connection failed"}), 500
 
 
 @app.route("/transactions", methods=["POST"])
@@ -64,6 +72,27 @@ def add_transaction():
     if not isinstance(category, str) or not category.strip():
         return jsonify({"error": "Category cannot be empty"}), 400
 
+    if transaction_type == "expense":
+        allowed_categories = [
+            "Food",
+            "Travel",
+            "Shopping",
+            "Bills",
+            "Other"
+        ]
+    else:
+        allowed_categories = [
+            "Salary",
+            "Pocket Money",
+            "Gift",
+            "Other Income"
+        ]
+
+    if category.strip() not in allowed_categories:
+        return jsonify({
+            "error": "Invalid category for this transaction type"
+        }), 400
+
     transaction_type = data["type"]
 
     if transaction_type not in ["income", "expense"]:
@@ -73,6 +102,11 @@ def add_transaction():
 
     if not isinstance(description, str):
         return jsonify({"error": "Description must be text"}), 400
+
+    if len(description) > 255:
+        return jsonify({
+            "error": "Description cannot exceed 255 characters"
+        }), 400
 
     if transaction_type == "expense":
         total_income = db.session.query(
@@ -129,6 +163,7 @@ def get_transactions():
     ])
 
 
+
 @app.route("/transactions/<int:transaction_id>", methods=["PUT"])
 def update_transaction(transaction_id):
     transaction = models.Transaction.query.get_or_404(transaction_id)
@@ -153,23 +188,49 @@ def update_transaction(transaction_id):
         if not math.isfinite(new_amount) or new_amount <= 0:
             return jsonify({"error": "Amount must be greater than zero"}), 400
 
-    if "category" in data:
-        category = data["category"]
-
-        if not isinstance(category, str) or not category.strip():
-            return jsonify({"error": "Category cannot be empty"}), 400
-
     if "type" in data:
         new_type = data["type"]
 
         if new_type not in ["income", "expense"]:
             return jsonify({"error": "Invalid transaction type"}), 400
 
+    if "category" in data:
+        category = data["category"]
+
+        if not isinstance(category, str) or not category.strip():
+            return jsonify({"error": "Category cannot be empty"}), 400
+
+        if new_type == "expense":
+            allowed_categories = [
+                "Food",
+                "Travel",
+                "Shopping",
+                "Bills",
+                "Other"
+            ]
+        else:
+            allowed_categories = [
+                "Salary",
+                "Pocket Money",
+                "Gift",
+                "Other Income"
+            ]
+
+        if category.strip() not in allowed_categories:
+            return jsonify({
+                "error": "This category is not allowed for this transaction type."
+            }), 400
+
     if "description" in data:
         description = data["description"]
 
         if not isinstance(description, str):
             return jsonify({"error": "Description must be text"}), 400
+
+        if len(description) > 255:
+            return jsonify({
+                "error": "Description cannot exceed 255 characters"
+            }), 400
 
     if new_amount != transaction.amount or new_type != transaction.type:
         total_income = db.session.query(
@@ -228,6 +289,7 @@ def update_transaction(transaction_id):
         return jsonify({"error": "Could not update transaction"}), 500
 
 
+
 @app.route("/transactions/<int:transaction_id>", methods=["DELETE"])
 def delete_transaction(transaction_id):
     transaction = models.Transaction.query.get_or_404(transaction_id)
@@ -260,4 +322,4 @@ def delete_transaction(transaction_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=os.getenv("FLASK_DEBUG") == "1")
