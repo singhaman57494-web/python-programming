@@ -411,6 +411,13 @@ setBudgetButton.addEventListener("click", function () {
 // Calculates monthly expenses and updates the budget details.
 function updateBudget() {
     const monthlyExpenses = getMonthlyExpenses();
+    if (!monthlyBudget || monthlyBudget <= 0) {
+        budgetMessage.textContent = "";
+        monthlyLimitElement.textContent = "Not set";
+        monthlySpentElement.textContent = `₹${monthlyExpenses.toFixed(2)}`;
+        remainingBudgetElement.textContent = "—";
+        return;
+    }
 
     const remaining = monthlyBudget - monthlyExpenses;
 
