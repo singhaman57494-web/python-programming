@@ -69,6 +69,11 @@ def add_transaction():
 
     category = data["category"]
 
+    transaction_type = data["type"]
+
+    if transaction_type not in ["income", "expense"]:
+        return jsonify({"error": "Invalid transaction type"}), 400
+
     if not isinstance(category, str) or not category.strip():
         return jsonify({"error": "Category cannot be empty"}), 400
 
@@ -92,11 +97,6 @@ def add_transaction():
         return jsonify({
             "error": "Invalid category for this transaction type"
         }), 400
-
-    transaction_type = data["type"]
-
-    if transaction_type not in ["income", "expense"]:
-        return jsonify({"error": "Invalid transaction type"}), 400
 
     description = data.get("description", "")
 
