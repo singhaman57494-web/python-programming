@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - ExpenseTracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="auth-page">
+
+    <div class="auth-container">
+        <h1>Expense<span>Tracker</span></h1>
+        <p class="auth-subtitle">Create your account to get started.</p>
+
+        <form id="signup-form">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" placeholder="Enter your full name" required>
+
+            <label for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" placeholder="Enter your email" required>
+
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" placeholder="Create a password" required>
+
+            <label for="confirm-password">Confirm Password</label>
+            <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+
+            <button type="submit">Create Account</button>
+        </form>
+
+        <p id="signup-message"></p>
+
+        <p class="auth-switch">
+            Already have an account?
+            <a href="login.html">Login</a>
+        </p>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+
+        document.getElementById("signup-form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("signup-email").value.trim();
+            const password = document.getElementById("signup-password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
+            const message = document.getElementById("signup-message");
+
+            if (password !== confirmPassword) {
+                message.textContent = "Passwords do not match!";
+                message.style.color = "red";
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/auth/signup`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const result = await response.json();
+
+                message.textContent = result.message || result.error;
+                message.style.color = response.ok ? "green" : "red";
+
+                if (response.ok) {
+                    document.getElementById("signup-form").reset();
+
+                    setTimeout(() => {
+                        window.location.href = "login.html";
+                    }, 1500);
+                }
+            } catch (error) {
+                message.textContent = "Unable to create your account. Please try again.";
+                message.style.color = "red";
+            }
+        });
+    </script>
+
+</body>
+
+</html>

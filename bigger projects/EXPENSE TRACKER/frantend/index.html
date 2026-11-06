@@ -10,10 +10,23 @@
 
 <body>
 
-    <header>
+    <header id="home">
+        <nav class="navbar">
+            <div class="nav-logo">
+                <h2>Expense<span>Tracker</span></h2>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#budget">Budget</a></li>
+                <li><a href="#dashboard">Dashboard</a></li>
+                <li><a href="#transactions">Transactions</a></li>
+                <li><a href="#reports">Reports</a></li>
+            </ul>
+        </nav>
         <h1>My Expense Tracker</h1>
 
-        <section class="budget-section">
+        <section class="budget-section" id="budget">
             <h2>Monthly Spending Limit</h2>
 
             <div class="budget-input">
@@ -55,7 +68,7 @@
             </form>
         </section>
 
-        <section class="dashboard">
+        <section class="dashboard" id="dashboard">
             <div class="card">
                 <h3>Total Balance</h3>
                 <p id="balance">₹0.00</p>
@@ -89,7 +102,7 @@
             </form>
         </section>
 
-        <section class="transactions">
+        <section class="transactions" id="transactions">
             <h2>Recent Transactions</h2>
 
             <p id="loadingMessage"></p>
@@ -112,7 +125,7 @@
 
             <div id="transaction-list"></div>
         </section>
-        <section class="charts-container">
+        <section class="charts-container" id="reports">
             <div class="chart-section">
                 <h2>Income by Category</h2>
                 <canvas id="income-chart"></canvas>
@@ -125,6 +138,11 @@
         </section>
 
     </main>
+    <footer class="footer">
+        <h3>ExpenseTracker</h3>
+        <p>Manage your money smartly.</p>
+        <p>&copy; 2026 ExpenseTracker. All rights reserved.</p>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>

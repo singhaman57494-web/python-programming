@@ -12,3 +12,8 @@ AND table_name = 'transactions';
 SELECT current_database(), current_schema();
 
 SELECT *FROM transactions;
+
+ALTER TABLE transactions
+ADD COLUMN IF NOT EXISTS user_id INTEGER
+REFERENCES users(id);
+
