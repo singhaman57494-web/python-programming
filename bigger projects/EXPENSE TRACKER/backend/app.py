@@ -1,13 +1,18 @@
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request , session
 from config import Config
 from sqlalchemy import text
 from extensions import db
 import models
 import math
 from flask_cors import CORS  # type: ignore[reportMissingModuleSource]
+from werkzeug.security import generate_password_hash
+from sqlalchemy.exc import IntegrityError
+from werkzeug.security import check_password_hash
+from functools import wraps
 
 app = Flask(__name__)
+
 CORS(
     app,
     resources={
@@ -16,16 +21,123 @@ CORS(
                 "FRONTEND_ORIGIN",
                 "http://127.0.0.1:5500"
             )
+        },
+        r"/auth/*": {
+            "origins": os.getenv(
+                "FRONTEND_ORIGIN",
+                "http://127.0.0.1:5500"
+            )
         }
-    }
+    },
+    supports_credentials=True
 )
 
 app.config.from_object(Config)
+
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="None" if os.getenv("FRONTEND_ORIGIN", "").startswith("https://") else "Lax",
+    SESSION_COOKIE_SECURE=os.getenv("FRONTEND_ORIGIN", "").startswith("https://"),
+    PERMANENT_SESSION_LIFETIME=3600
+)
 
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+def login_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if "user_id" not in session:
+            return jsonify({"error": "Please login first"}), 401
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+@app.route("/auth/signup", methods=["POST"])
+def signup():
+    data = request.get_json()
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "Invalid JSON data"}), 400
+
+    name = data.get("name", "").strip()
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+
+    if not name or not email or not password:
+        return jsonify({"error": "All fields are required"}), 400
+
+    if len(name) > 100 or len(email) > 120:
+        return jsonify({"error": "Name or email is too long"}), 400
+
+    if "@" not in email or "." not in email:
+        return jsonify({"error": "Enter a valid email"}), 400
+
+    if len(password) < 8:
+        return jsonify({
+            "error": "Password must be at least 8 characters"
+        }), 400
+
+    if models.User.query.filter_by(email=email).first():
+        return jsonify({"error": "Email already registered"}), 409
+
+    new_user = models.User(
+        name=name,
+        email=email,
+        password_hash=generate_password_hash(password)
+    )
+
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Account created successfully!"
+        }), 201
+
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "Email already registered"}), 409
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Signup failed")
+        return jsonify({"error": "Could not create account"}), 500
+    
+
+@app.route("/auth/login", methods=["POST"])
+def login():
+    data = request.get_json()
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "Invalid JSON data"}), 400
+
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+
+    user = models.User.query.filter_by(email=email).first()
+
+    if not user or not check_password_hash(user.password_hash, password):
+        return jsonify({"error": "Invalid email or password"}), 401
+
+    session.clear()
+    session["user_id"] = user.id
+    session.permanent = True
+
+    return jsonify({
+        "message": "Login successful!",
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email
+        }
+    }), 200
 
 
 @app.route("/")
@@ -48,6 +160,7 @@ def db_test():
 
 
 @app.route("/transactions", methods=["POST"])
+@login_required
 def add_transaction():
     data = request.get_json()
 
@@ -126,6 +239,7 @@ def add_transaction():
 
     try:
         new_transaction = models.Transaction(
+            user_id=session["user_id"],
             amount=amount,
             category=category.strip(),
             description=description.strip(),
@@ -144,9 +258,15 @@ def add_transaction():
         db.session.rollback()
         return jsonify({"error": "Could not save transaction"}), 500
 
+
 @app.route("/transactions", methods=["GET"])
+@login_required
 def get_transactions():
-    transactions = models.Transaction.query.order_by(
+    user_id = session["user_id"]
+
+    transactions = models.Transaction.query.filter_by(
+        user_id=user_id
+    ).order_by(
         models.Transaction.id.desc()
     ).all()
 
@@ -163,10 +283,13 @@ def get_transactions():
     ])
 
 
-
 @app.route("/transactions/<int:transaction_id>", methods=["PUT"])
+@login_required
 def update_transaction(transaction_id):
-    transaction = models.Transaction.query.get_or_404(transaction_id)
+    transaction = models.Transaction.query.filter_by(
+        id=transaction_id,
+        user_id=session["user_id"]
+    ).first_or_404()
 
     data = request.get_json()
 
@@ -231,12 +354,14 @@ def update_transaction(transaction_id):
             return jsonify({
                 "error": "Description cannot exceed 255 characters"
             }), 400
-
     if new_amount != transaction.amount or new_type != transaction.type:
+        user_id = session["user_id"]
+
         total_income = db.session.query(
             db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
         ).filter(
             models.Transaction.type == "income",
+            models.Transaction.user_id == user_id,
             models.Transaction.id != transaction.id
         ).scalar()
 
@@ -244,6 +369,7 @@ def update_transaction(transaction_id):
             db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
         ).filter(
             models.Transaction.type == "expense",
+            models.Transaction.user_id == user_id,
             models.Transaction.id != transaction.id
         ).scalar()
 
