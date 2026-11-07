@@ -35,10 +35,11 @@ const monthlySpentElement = document.getElementById("monthly-spent");
 const remainingBudgetElement = document.getElementById("remaining-budget");
 const budgetMessage = document.getElementById("budget-message");
 
-
 async function fetchTransactions() {
     try {
-        const response = await fetch(`${API_URL}/transactions`);
+        const response = await fetch(`${API_URL}/transactions`, {
+            credentials: "include"
+        });
 
         if (!response.ok) {
             throw new Error("Failed to fetch transactions");
@@ -127,6 +128,7 @@ expenseForm.addEventListener("submit", async function (event) {
     try {
         const response = await fetch(`${API_URL}/transactions`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -215,6 +217,7 @@ incomeForm.addEventListener("submit", async function (event) {
     try {
         const response = await fetch(`${API_URL}/transactions`, {
             method: "POST",
+            credentials : "include",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -459,3 +462,44 @@ function getMonthlyExpenses() {
 }
 
 loadTransactions();
+
+const logoutButton = document.getElementById("logout-btn");
+
+if (logoutButton) {
+    logoutButton.addEventListener("click", async function () {
+        try {
+            const response = await fetch(`${API_URL}/auth/logout`, {
+                method: "POST",
+                credentials: "include"
+            });
+
+            if (!response.ok) {
+                throw new Error("Logout failed");
+            }
+
+            window.location.href = "login.html";
+
+        } catch (error) {
+            alert("Could not logout. Please try again.");
+            console.error("Logout error:", error);
+        }
+    });
+}
+
+async function checkLogin() {
+    try {
+        const response = await fetch(`${API_URL}/auth/me`, {
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            window.location.href = "login.html";
+        }
+
+    } catch (error) {
+        console.error("Login verification failed:", error);
+        window.location.href = "login.html";
+    }
+}
+
+checkLogin();

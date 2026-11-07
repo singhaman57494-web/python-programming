@@ -51,7 +51,7 @@
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             font-size: 15px;
-            
+
         }
 
         .buttons {
@@ -143,7 +143,9 @@
                     throw new Error("Transaction ID is missing.");
                 }
 
-                const response = await fetch(`${API_URL}/transactions`);
+                const response = await fetch(`${API_URL}/transactions`, {
+                    credentials: "include"
+                });
 
                 if (!response.ok) {
                     throw new Error("Could not load transactions.");
@@ -220,6 +222,7 @@
                     `${API_URL}/transactions/${encodeURIComponent(transactionId)}`,
                     {
                         method: "PUT",
+                        credentials: "include",
                         headers: {
                             "Content-Type": "application/json"
                         },

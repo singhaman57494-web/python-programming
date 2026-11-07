@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        const API_URL = "http://127.0.0.1:5000";
+        const API_URL = "https://python-programming-1-8ew8.onrender.com";
 
         document.getElementById("login-form").addEventListener("submit", async function (event) {
             event.preventDefault();
@@ -56,6 +56,11 @@
 
                 message.textContent = result.message || result.error;
                 message.style.color = response.ok ? "green" : "red";
+                if (response.ok) {
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 1000);
+                }
 
             } catch (error) {
                 message.textContent = "Server connection failed. Please try again.";

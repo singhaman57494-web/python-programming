@@ -39,7 +39,7 @@
     </div>
 
     <script>
-        const API_URL = "http://127.0.0.1:5000";
+        const API_URL = "https://python-programming-1-8ew8.onrender.com";
 
         document.getElementById("signup-form").addEventListener("submit", async function (event) {
             event.preventDefault();
@@ -59,6 +59,7 @@
             try {
                 const response = await fetch(`${API_URL}/auth/signup`, {
                     method: "POST",
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json"
                     },

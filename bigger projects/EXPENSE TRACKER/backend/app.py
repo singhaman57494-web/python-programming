@@ -1,32 +1,33 @@
 import os
-from flask import Flask, jsonify, request , session
-from config import Config
-from sqlalchemy import text
-from extensions import db
-import models
 import math
-from flask_cors import CORS  # type: ignore[reportMissingModuleSource]
-from werkzeug.security import generate_password_hash
+
+from flask import Flask, jsonify, request, session
+from flask_cors import CORS #pyright: ignore[reportMissingModuleSource]
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
-from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 
+from config import Config
+from extensions import db
+import models
+
+
 app = Flask(__name__)
+
+frontend_origin = os.getenv(
+    "FRONTEND_ORIGIN",
+    "http://127.0.0.1:5500"
+)
 
 CORS(
     app,
     resources={
-        r"/transactions*": {
-            "origins": os.getenv(
-                "FRONTEND_ORIGIN",
-                "http://127.0.0.1:5500"
-            )
+        r"/transactions.*": {
+            "origins": frontend_origin
         },
-        r"/auth/*": {
-            "origins": os.getenv(
-                "FRONTEND_ORIGIN",
-                "http://127.0.0.1:5500"
-            )
+        r"/auth/.*": {
+            "origins": frontend_origin
         }
     },
     supports_credentials=True
@@ -34,10 +35,12 @@ CORS(
 
 app.config.from_object(Config)
 
+is_production = frontend_origin.startswith("https://")
+
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE="None" if os.getenv("FRONTEND_ORIGIN", "").startswith("https://") else "Lax",
-    SESSION_COOKIE_SECURE=os.getenv("FRONTEND_ORIGIN", "").startswith("https://"),
+    SESSION_COOKIE_SAMESITE="None" if is_production else "Lax",
+    SESSION_COOKIE_SECURE=is_production,
     PERMANENT_SESSION_LIFETIME=3600
 )
 
@@ -45,6 +48,14 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+with app.app_context():
+    db.session.execute(text("""
+        ALTER TABLE transactions
+        ADD COLUMN IF NOT EXISTS user_id INTEGER
+        REFERENCES users(id)
+    """))
+    db.session.commit()
 
 def login_required(func):
     @wraps(func)
@@ -181,7 +192,6 @@ def add_transaction():
         return jsonify({"error": "Amount must be greater than zero"}), 400
 
     category = data["category"]
-
     transaction_type = data["type"]
 
     if transaction_type not in ["income", "expense"]:
@@ -192,18 +202,11 @@ def add_transaction():
 
     if transaction_type == "expense":
         allowed_categories = [
-            "Food",
-            "Travel",
-            "Shopping",
-            "Bills",
-            "Other"
+            "Food", "Travel", "Shopping", "Bills", "Other"
         ]
     else:
         allowed_categories = [
-            "Salary",
-            "Pocket Money",
-            "Gift",
-            "Other Income"
+            "Salary", "Pocket Money", "Gift", "Other Income"
         ]
 
     if category.strip() not in allowed_categories:
@@ -222,13 +225,21 @@ def add_transaction():
         }), 400
 
     if transaction_type == "expense":
+        user_id = session["user_id"]
+
         total_income = db.session.query(
             db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
-        ).filter_by(type="income").scalar()
+        ).filter(
+            models.Transaction.user_id == user_id,
+            models.Transaction.type == "income"
+        ).scalar()
 
         total_expenses = db.session.query(
             db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
-        ).filter_by(type="expense").scalar()
+        ).filter(
+            models.Transaction.user_id == user_id,
+            models.Transaction.type == "expense"
+        ).scalar()
 
         available_balance = float(total_income) - float(total_expenses)
 
@@ -256,8 +267,40 @@ def add_transaction():
 
     except Exception:
         db.session.rollback()
+        app.logger.exception("Transaction save failed")
         return jsonify({"error": "Could not save transaction"}), 500
 
+
+@app.route("/auth/logout", methods=["POST"])
+@login_required
+def logout():
+    session.clear()
+
+    return jsonify({
+        "message": "Logged out successfully!"
+    }), 200
+
+
+@app.route("/auth/me", methods=["GET"])
+def current_user():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Not logged in"}), 401
+
+    user = db.session.get(models.User, user_id)
+
+    if not user:
+        session.clear()
+        return jsonify({"error": "User not found"}), 401
+
+    return jsonify({
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email
+        }
+    }), 200
 
 @app.route("/transactions", methods=["GET"])
 @login_required
@@ -417,20 +460,30 @@ def update_transaction(transaction_id):
 
 
 @app.route("/transactions/<int:transaction_id>", methods=["DELETE"])
+@login_required
 def delete_transaction(transaction_id):
-    transaction = models.Transaction.query.get_or_404(transaction_id)
+    user_id = session["user_id"]
+
+    transaction = models.Transaction.query.filter_by(
+        id=transaction_id,
+        user_id=user_id
+    ).first_or_404()
 
     if transaction.type == "income":
         total_income = db.session.query(
             db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
         ).filter(
             models.Transaction.type == "income",
+            models.Transaction.user_id == user_id,
             models.Transaction.id != transaction.id
         ).scalar()
 
         total_expenses = db.session.query(
             db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
-        ).filter_by(type="expense").scalar()
+        ).filter(
+            models.Transaction.type == "expense",
+            models.Transaction.user_id == user_id
+        ).scalar()
 
         new_balance = float(total_income) - float(total_expenses)
 

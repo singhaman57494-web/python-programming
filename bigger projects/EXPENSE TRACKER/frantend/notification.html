@@ -154,7 +154,10 @@
                 try {
                     const response = await fetch(
                         `${API_URL}/transactions/${encodeURIComponent(id)}`,
-                        { method: "DELETE" }
+                        { 
+                            method: "DELETE",
+                            credentials:"include"
+                        }
                     );
 
                     const result = await response.json();
