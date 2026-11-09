@@ -17,7 +17,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #f1f5f9;
+            background: #178978;
             font-family: Arial, sans-serif;
         }
 
@@ -97,7 +97,11 @@
     </div>
 
     <script>
-        const API_URL = "https://python-programming-1-8ew8.onrender.com";
+        const API_URL =
+            window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1"
+                ? "http://127.0.0.1:5500"
+                : "https://python-programming-1-8ew8.onrender.com";
 
         const params = new URLSearchParams(window.location.search);
 
@@ -154,9 +158,9 @@
                 try {
                     const response = await fetch(
                         `${API_URL}/transactions/${encodeURIComponent(id)}`,
-                        { 
+                        {
                             method: "DELETE",
-                            credentials:"include"
+                            credentials: "include"
                         }
                     );
 

@@ -1,4 +1,8 @@
-const API_URL = "https://python-programming-1-8ew8.onrender.com";
+const API_URL =
+    window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+        ? "http://127.0.0.1:5500"
+        : "https://python-programming-1-8ew8.onrender.com";
 
 function showNotification(status, message) {
     window.location.href =
@@ -217,7 +221,7 @@ incomeForm.addEventListener("submit", async function (event) {
     try {
         const response = await fetch(`${API_URL}/transactions`, {
             method: "POST",
-            credentials : "include",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },
