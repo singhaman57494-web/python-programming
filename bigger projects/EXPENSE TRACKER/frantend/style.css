@@ -540,14 +540,14 @@ header h1 {
     width: 100%;
     max-width: 420px;
     padding: 35px;
-    background: white;
+    background: rgb(248, 247, 247);
     border-radius: 18px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }
 
 .auth-container h1 {
     text-align: center;
-    color: #168052;
+    color: #e46f9e;
     margin-top: 0;
 }
 
@@ -574,7 +574,7 @@ header h1 {
 
 #login-form input {
     padding: 13px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #3b82f6;
     border-radius: 8px;
     font-size: 15px;
 }
