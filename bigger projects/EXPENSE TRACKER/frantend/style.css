@@ -491,6 +491,24 @@ header h1 {
     color: #168052;
 }
 
+.logout-btn {
+    background-color: rgb(232, 3, 3);
+    border-radius: 5px;
+    width: 70px;
+    color: #f1f2f2;
+    border: none;
+
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links li:last-child {
+    margin-left: auto;
+}
+
 @media (max-width: 650px) {
     .navbar {
         flex-direction: column;

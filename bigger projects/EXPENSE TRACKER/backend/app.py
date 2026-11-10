@@ -224,30 +224,6 @@ def add_transaction():
             "error": "Description cannot exceed 255 characters"
         }), 400
 
-    if transaction_type == "expense":
-        user_id = session["user_id"]
-
-        total_income = db.session.query(
-            db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
-        ).filter(
-            models.Transaction.user_id == user_id,
-            models.Transaction.type == "income"
-        ).scalar()
-
-        total_expenses = db.session.query(
-            db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
-        ).filter(
-            models.Transaction.user_id == user_id,
-            models.Transaction.type == "expense"
-        ).scalar()
-
-        available_balance = float(total_income) - float(total_expenses)
-
-        if amount > available_balance:
-            return jsonify({
-                "error": "Insufficient balance. Add income before recording this expense."
-            }), 400
-
     try:
         new_transaction = models.Transaction(
             user_id=session["user_id"],
@@ -397,46 +373,7 @@ def update_transaction(transaction_id):
             return jsonify({
                 "error": "Description cannot exceed 255 characters"
             }), 400
-    if new_amount != transaction.amount or new_type != transaction.type:
-        user_id = session["user_id"]
-
-        total_income = db.session.query(
-            db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
-        ).filter(
-            models.Transaction.type == "income",
-            models.Transaction.user_id == user_id,
-            models.Transaction.id != transaction.id
-        ).scalar()
-
-        total_expenses = db.session.query(
-            db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
-        ).filter(
-            models.Transaction.type == "expense",
-            models.Transaction.user_id == user_id,
-            models.Transaction.id != transaction.id
-        ).scalar()
-
-        base_balance = float(total_income) - float(total_expenses)
-
-        current_balance = base_balance
-        if transaction.type == "income":
-            current_balance += transaction.amount
-        else:
-            current_balance -= transaction.amount
-
-        new_balance = base_balance
-        if new_type == "income":
-            new_balance += new_amount
-        else:
-            new_balance -= new_amount
-
-        # Allow corrections that improve an existing negative balance,
-        # but reject changes that make the balance more negative.
-        if new_balance < 0 and new_balance < current_balance:
-            return jsonify({
-                "error": "Insufficient balance. This change would make your balance more negative."
-            }), 400
-
+    
     try:
         transaction.amount = new_amount
         transaction.type = new_type
@@ -458,8 +395,6 @@ def update_transaction(transaction_id):
         return jsonify({"error": "Could not update transaction"}), 500
 
 
-
-@app.route("/transactions/<int:transaction_id>", methods=["DELETE"])
 @login_required
 def delete_transaction(transaction_id):
     user_id = session["user_id"]
@@ -468,29 +403,6 @@ def delete_transaction(transaction_id):
         id=transaction_id,
         user_id=user_id
     ).first_or_404()
-
-    if transaction.type == "income":
-        total_income = db.session.query(
-            db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
-        ).filter(
-            models.Transaction.type == "income",
-            models.Transaction.user_id == user_id,
-            models.Transaction.id != transaction.id
-        ).scalar()
-
-        total_expenses = db.session.query(
-            db.func.coalesce(db.func.sum(models.Transaction.amount), 0)
-        ).filter(
-            models.Transaction.type == "expense",
-            models.Transaction.user_id == user_id
-        ).scalar()
-
-        new_balance = float(total_income) - float(total_expenses)
-
-        if new_balance < 0:
-            return jsonify({
-                "error": "Cannot delete this income because it would make your balance negative."
-            }), 400
 
     db.session.delete(transaction)
     db.session.commit()
