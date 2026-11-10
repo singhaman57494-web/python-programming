@@ -598,7 +598,7 @@ header h1 {
 }
 
 #login-form button:hover {
-    background: #106640;
+    background: #1e293b;
 }
 
 .auth-switch {
@@ -657,5 +657,5 @@ header h1 {
 }
 
 #signup-form button:hover {
-    background: #106640;
+    background: #1e293b;
 }
