@@ -38,7 +38,7 @@ const monthlyLimitElement = document.getElementById("monthly-limit");
 const monthlySpentElement = document.getElementById("monthly-spent");
 const remainingBudgetElement = document.getElementById("remaining-budget");
 const budgetMessage = document.getElementById("budget-message");
-
+const exportCsvLink = document.getElementById("export-csv");
 
 async function fetchTransactions() {
     try {
@@ -529,5 +529,68 @@ async function checkLogin() {
         window.location.href = "login.html";
     }
 }
+
+
+exportCsvLink.addEventListener("click", function (event) {
+    event.preventDefault();
+
+    if (!transactions || transactions.length === 0) {
+        showNotification("warning", "No transactions available to export.");
+        return;
+    }
+
+    const headers = [
+        "ID",
+        "Date",
+        "Type",
+        "Category",
+        "Description",
+        "Amount"
+    ];
+
+    function escapeCsv(value) {
+        let text = String(value ?? "");
+
+        // Prevent spreadsheet formula injection
+        if (/^[=+\-@\t\r]/.test(text)) {
+            text = "'" + text;
+        }
+
+        return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    const rows = transactions.map(transaction => [
+        transaction.id,
+        transaction.date,
+        transaction.type,
+        transaction.category,
+        transaction.description,
+        transaction.amount
+    ]);
+
+    const csvContent = [
+        headers.map(escapeCsv).join(","),
+        ...rows.map(row => row.map(escapeCsv).join(","))
+    ].join("\r\n");
+
+    const blob = new Blob(
+        ["\uFEFF" + csvContent],
+        { type: "text/csv;charset=utf-8;" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "expense-tracker-transactions.csv";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+
+    showNotification("success", "CSV exported successfully!");
+});
 
 checkLogin();
