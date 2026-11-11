@@ -69,17 +69,6 @@ header h1 {
     margin: auto;
 }
 
-@media (max-width: 650px) {
-    .dashboard {
-        grid-template-columns: 1fr;
-    }
-
-    body {
-        padding: 16px;
-    }
-}
-
-
 /* Add Expense Form */
 .add-expense {
     max-width: 1000px;
@@ -148,22 +137,6 @@ header h1 {
 #expense-form button:active {
     transform: scale(0.99);
 }
-
-/* Mobile Responsive */
-@media (max-width: 650px) {
-    .add-expense {
-        padding: 20px;
-    }
-
-    #expense-form {
-        grid-template-columns: 1fr;
-    }
-
-    #expense-form button {
-        grid-column: auto;
-    }
-}
-
 
 /* Transaction design */
 
@@ -275,15 +248,6 @@ header h1 {
     background: #106640;
 }
 
-@media (max-width: 650px) {
-    #income-form {
-        grid-template-columns: 1fr;
-    }
-
-    #income-form button {
-        grid-column: auto;
-    }
-}
  /*               Graph chart */
 
 
@@ -315,15 +279,6 @@ header h1 {
     width: 100% !important;
     height: 300px !important;
 }
-
-@media (max-width: 700px) {
-    .charts-container {
-        grid-template-columns: 1fr;
-    }
-}
-
-/*                search or filter box  */
-
 
 /* Search and Filter Styling */
 #search-transaction,
@@ -509,7 +464,61 @@ header h1 {
     margin-left: auto;
 }
 
-@media (max-width: 650px) {
+/**************************************MEDIA QUERY********************************/
+
+@media (min-width: 300px) and (max-width: 900px) {
+
+    /* Dashboard */
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    body {
+        padding: 16px;
+    }
+
+    /* Expense form */
+    .add-expense {
+        padding: 20px;
+    }
+
+    #expense-form {
+        grid-template-columns: 1fr;
+    }
+
+    #expense-form button {
+        grid-column: auto;
+    }
+
+    /* Income form */
+    #income-form {
+        grid-template-columns: 1fr;
+    }
+
+    #income-form button {
+        grid-column: auto;
+    }
+
+    /* Charts */
+    .charts-container {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 0 10px;
+    }
+
+    .chart-section {
+        padding: 15px;
+    }
+
+    .chart-section h2 {
+        font-size: 22px;
+    }
+
+    .chart-section canvas {
+        height: 250px !important;
+    }
+
+    /* Navbar */
     .navbar {
         flex-direction: column;
         padding: 18px;
@@ -517,7 +526,12 @@ header h1 {
 
     .nav-links {
         justify-content: center;
+        flex-wrap: wrap;
         gap: 15px;
+    }
+
+    .nav-links li:last-child {
+        margin-left: 0;
     }
 }
 

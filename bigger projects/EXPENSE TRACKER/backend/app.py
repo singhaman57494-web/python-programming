@@ -393,8 +393,9 @@ def update_transaction(transaction_id):
     except Exception:
         db.session.rollback()
         return jsonify({"error": "Could not update transaction"}), 500
+    
 
-
+@app.route("/transactions/<int:transaction_id>", methods=["DELETE"])
 @login_required
 def delete_transaction(transaction_id):
     user_id = session["user_id"]

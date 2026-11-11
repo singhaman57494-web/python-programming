@@ -39,27 +39,40 @@ const monthlySpentElement = document.getElementById("monthly-spent");
 const remainingBudgetElement = document.getElementById("remaining-budget");
 const budgetMessage = document.getElementById("budget-message");
 
+
 async function fetchTransactions() {
     try {
         const response = await fetch(`${API_URL}/transactions`, {
             credentials: "include"
         });
 
-        if (!response.ok) {
-            throw new Error("Failed to fetch transactions");
+        const result = await response.json().catch(() => ({}));
+
+        if (response.status === 401) {
+            window.location.href = "login.html";
+            throw new Error("Session expired. Please login again.");
         }
 
-        const transactions = await response.json();
+        if (!response.ok) {
+            throw new Error(
+                result.error || "Failed to fetch transactions."
+            );
+        }
 
-        console.log("Transactions:", transactions);
+        if (!Array.isArray(result)) {
+            throw new Error("Invalid transaction data received.");
+        }
 
-        return transactions;
+        console.log("Transactions:", result);
+
+        return result;
 
     } catch (error) {
         console.error("Error fetching transactions:", error);
         throw error;
     }
 }
+
 
 
 async function loadTransactions() {
@@ -143,8 +156,10 @@ expenseForm.addEventListener("submit", async function (event) {
             })
         });
 
+        const result = await response.json().catch(() => ({}));
+
         if (!response.ok) {
-            throw new Error("Failed to save expense");
+            throw new Error(result.error || "Failed to save expense.");
         }
 
         await loadTransactions();
@@ -155,7 +170,11 @@ expenseForm.addEventListener("submit", async function (event) {
 
     } catch (error) {
         console.error("Error saving expense:", error);
-        showNotification("error", "Expense could not be saved to database.");
+
+        showNotification(
+            "error",
+            error.message || "Network error. Please try again."
+        );
     }
 });
 
@@ -232,10 +251,11 @@ incomeForm.addEventListener("submit", async function (event) {
             })
         });
 
-        if (!response.ok) {
-            throw new Error("Failed to save income");
-        }
+        const result = await response.json().catch(() => ({}));
 
+        if (!response.ok) {
+            throw new Error(result.error || "Failed to save income.");
+        }
         await loadTransactions();
 
         incomeForm.reset();
@@ -244,7 +264,11 @@ incomeForm.addEventListener("submit", async function (event) {
 
     } catch (error) {
         console.error("Income save error:", error);
-        showNotification("error", "Income could not be saved to database.");
+
+        showNotification(
+            "error",
+            error.message || "Network error. Please try again."
+        );
     }
 });
 
